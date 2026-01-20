@@ -5,11 +5,24 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "pnpm docker:start && next start",
+    "lint": "eslint",
+    "docker:start": "docker compose up -d",
+    "docker:stop": "docker compose down",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx src/db/seed.ts",
+    "db:delete": "tsx src/db/delete.ts",
+    "db:drop": "tsx src/db/delete.ts --drop-tables",
+    "db:reset": "pnpm db:delete && pnpm db:drop && pnpm db:generate && pnpm db:push && pnpm db:seed"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.45.1",
     "next": "16.1.4",
+    "postgres": "^3.4.8",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
@@ -18,6 +31,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.8",
     "eslint": "^9",
     "eslint-config-next": "16.1.4",
     "tailwindcss": "^4",
