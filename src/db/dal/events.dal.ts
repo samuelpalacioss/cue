@@ -41,29 +41,12 @@ export async function findEventByUsernameAndSlug(
   slug: string
 ): Promise<
   | (Event & {
-      user: (User & { client: Client }) | null;
-      organization: Organization | null;
-    })
+    user: (User & { client: Client }) | null;
+    organization: Organization | null;
+  })
   | undefined
 > {
-  // First find user by username
-  const user = await findUserByUsername(username);
-  if (!user) {
-    return undefined;
-  }
-
-  // Then find event where (userId = user.id OR organizationId = user.organizationId) AND urlSlug = slug
-  const whereConditions = [];
-
-  // Add userId condition
-  whereConditions.push(eq(events.userId, user.id));
-
-  // Add organizationId condition if user belongs to an organization
-  if (user.organizationId) {
-    whereConditions.push(eq(events.organizationId, user.organizationId));
-  }
-
-  // Query event with joins
+  // One query with all joins
   const result = await db
     .select({
       event: events,
@@ -72,10 +55,19 @@ export async function findEventByUsernameAndSlug(
       organization: organizations,
     })
     .from(events)
-    .leftJoin(users, eq(events.userId, users.id))
+    .innerJoin(users, eq(events.userId, users.id))
     .leftJoin(clients, eq(users.clientId, clients.id))
     .leftJoin(organizations, eq(events.organizationId, organizations.id))
-    .where(and(eq(events.urlSlug, slug), or(...whereConditions)))
+    .where(
+      and(
+        eq(events.urlSlug, slug),
+        eq(users.username, username),
+        or(
+          eq(events.userId, users.id),
+          eq(events.organizationId, users.organizationId)
+        )
+      )
+    )
     .limit(1);
 
   if (!result[0]) {
@@ -216,13 +208,11 @@ export async function findAvailabilitySchedulesForDate(
 ): Promise<AvailabilitySchedule[]> {
   // Calculate day of week from date
   const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const dateObj = new Date(date + 'T00:00:00Z'); // Parse as UTC to avoid timezone issues
+  const dateObj = new Date(date + 'T00:00:00Z');
   const dayOfWeek = days[dateObj.getUTCDay()];
 
-  // First, try to find specific date schedules (highest priority)
+  // Build conditions for specific date schedules
   const specificDateConditions = [];
-
-  // Event-specific schedule for this date
   specificDateConditions.push(
     and(
       eq(availabilitySchedules.eventId, eventId),
@@ -230,7 +220,7 @@ export async function findAvailabilitySchedulesForDate(
     )
   );
 
-  // Global schedule for this specific date (user)
+  // Build conditions for user-specific schedules
   if (userId) {
     specificDateConditions.push(
       and(
@@ -241,7 +231,7 @@ export async function findAvailabilitySchedulesForDate(
     );
   }
 
-  // Global schedule for this specific date (organization)
+  // Build conditions for organization-specific schedules
   if (organizationId) {
     specificDateConditions.push(
       and(
@@ -252,20 +242,8 @@ export async function findAvailabilitySchedulesForDate(
     );
   }
 
-  const specificDateSchedules = await db
-    .select()
-    .from(availabilitySchedules)
-    .where(and(eq(availabilitySchedules.isActive, true), or(...specificDateConditions)));
-
-  // If we found specific date schedules, return them (they override recurring schedules)
-  if (specificDateSchedules.length > 0) {
-    return specificDateSchedules;
-  }
-
-  // Otherwise, fall back to recurring schedules for the day of week
+  // Build conditions for recurring schedules
   const recurringConditions = [];
-
-  // Event-specific recurring schedule
   recurringConditions.push(
     and(
       eq(availabilitySchedules.eventId, eventId),
@@ -274,7 +252,6 @@ export async function findAvailabilitySchedulesForDate(
     )
   );
 
-  // Global recurring schedule (user)
   if (userId) {
     recurringConditions.push(
       and(
@@ -286,7 +263,6 @@ export async function findAvailabilitySchedulesForDate(
     );
   }
 
-  // Global recurring schedule (organization)
   if (organizationId) {
     recurringConditions.push(
       and(
@@ -296,6 +272,16 @@ export async function findAvailabilitySchedulesForDate(
         sql`${availabilitySchedules.specificDate} IS NULL`
       )
     );
+  }
+
+  //  Using 2 queries but being more explicit about the priority (specific date schedules first)
+  const specificDateSchedules = await db
+    .select()
+    .from(availabilitySchedules)
+    .where(and(eq(availabilitySchedules.isActive, true), or(...specificDateConditions)));
+
+  if (specificDateSchedules.length > 0) {
+    return specificDateSchedules;
   }
 
   const recurringSchedules = await db

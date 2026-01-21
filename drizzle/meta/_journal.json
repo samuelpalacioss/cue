@@ -29,6 +29,13 @@
       "when": 1768972495258,
       "tag": "0003_lush_deathbird",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1769022866839,
+      "tag": "0004_third_spirit",
+      "breakpoints": true
     }
   ]
 }

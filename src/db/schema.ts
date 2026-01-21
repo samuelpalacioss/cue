@@ -82,6 +82,7 @@ export const users = pgTable(
   },
   (table) => ({
     emailIdx: uniqueIndex('User_email_idx').on(table.email),
+    usernameIdx: index('User_username_idx').on(table.username),
     organizationIdIdx: index('User_organization_id_idx').on(table.organizationId),
     clientIdIdx: uniqueIndex('User_client_id_idx').on(table.clientId),
   })
@@ -246,6 +247,12 @@ export const bookings = pgTable(
     personIdIdx: index('Booking_person_id_idx').on(table.personId),
     dateTimeIdx: index('Booking_date_time_idx').on(table.date, table.timeSlot),
     statusIdx: index('Booking_status_idx').on(table.status),
+    // Composite index for common query pattern: find bookings by option, date range, and status
+    optionDateStatusIdx: index('Booking_option_date_status_idx').on(
+      table.eventOptionId,
+      table.date,
+      table.status
+    ),
   })
 );
 
@@ -349,6 +356,13 @@ export const availabilitySchedules = pgTable(
     dayOfWeekIdx: index('AvailabilitySchedule_day_of_week_idx').on(table.dayOfWeek),
     specificDateIdx: index('AvailabilitySchedule_specific_date_idx').on(table.specificDate),
     activeIdx: index('AvailabilitySchedule_active_idx').on(table.isActive),
+    // Composite indexes for common query patterns with isActive filter
+    activeEventIdx: index('AvailabilitySchedule_active_event_idx').on(table.isActive, table.eventId),
+    activeDateIdx: index('AvailabilitySchedule_active_date_idx').on(
+      table.isActive,
+      table.specificDate
+    ),
+    activeDowIdx: index('AvailabilitySchedule_active_dow_idx').on(table.isActive, table.dayOfWeek),
   })
 );
 
