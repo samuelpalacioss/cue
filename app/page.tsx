@@ -7,6 +7,7 @@ import { getLocalTimeZone, today } from "@internationalized/date";
 import Image from "next/image";
 import EventInfoPanel from "@/components/booking/event-info-panel";
 import { EventData } from "@/src/types/schema";
+import CalendarPanel from "@/components/booking/calendar-panel";
 
 // Mock event data for testing
 const mockEvent: EventData = {
@@ -27,6 +28,7 @@ const mockEvent: EventData = {
 
 export default function Home() {
   const [timezone, setTimezone] = useState(getLocalTimeZone());
+  const [selectedDate, setSelectedDate] = useState(today(getLocalTimeZone()));
 
   return (
     <>
@@ -36,11 +38,12 @@ export default function Home() {
           slots={[{ startTime: "2026-01-20T10:00:00", endTime: "2026-01-20T11:00:00", available: true }]}
         />
       </TimeSlotPanel> */}
-      <EventInfoPanel
+      {/* <EventInfoPanel
         event={mockEvent}
         timezone={timezone}
         onTimezoneChange={setTimezone}
-      />
+      /> */}
+      <CalendarPanel selectedDate={selectedDate} onDateChange={setSelectedDate} />
     </>
   );
 }
