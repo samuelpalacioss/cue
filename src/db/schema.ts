@@ -93,7 +93,7 @@ export const users = pgTable(
  */
 export const durations = pgTable('Duration', {
   id: integer('id').primaryKey().generatedAlwaysAsIdentity(),
-  duration: interval('duration').notNull(), // e.g., '30 minutes', '1 hour'
+  durationMinutes: integer('duration_minutes').notNull(), // e.g., '30 minutes', '1 hour'
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -189,6 +189,7 @@ export const eventOptions = pgTable(
       .references(() => events.id, { onDelete: 'cascade' }),
     durationId: integer('duration_id').references(() => durations.id), // No onDelete = 'no action'
     capacity: integer('capacity').default(1).notNull(),
+    isDefault: boolean('is_default').default(false).notNull(), // True if this is the default event option for the event
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   },
@@ -328,8 +329,6 @@ export const availabilitySchedules = pgTable(
     dayOfWeek: dayOfWeekEnum('day_of_week').notNull(), // monday, tuesday, etc.
     startTime: time('start_time').notNull(), // e.g., '09:00:00'
     endTime: time('end_time').notNull(), // e.g., '17:00:00'
-    validFrom: date('valid_from'), // nullable - if null, always valid from the beginning
-    validUntil: date('valid_until'), // nullable - if null, ongoing indefinitely
     isActive: boolean('is_active').default(true).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),

@@ -27,6 +27,9 @@ export default function EventInfoPanel({ event, timezone, onTimezoneChange }: Ev
     const MeetingIcon = MEETING_TYPE_ICONS[event.meetingType];
     const meetingLabel = MEETING_TYPE_LABELS[event.meetingType];
 
+    // Get default option duration
+    const defaultOption = event.eventOptions.find(opt => opt.id === event.defaultOptionId);
+    const durationMinutes = defaultOption?.durationMinutes ?? 30;
 
     return (
         <div className="p-6 md:rounded-l-lg md:border-b-0 md:border-r md:border-zinc-800 md:bg-zinc-900">
@@ -55,7 +58,7 @@ export default function EventInfoPanel({ event, timezone, onTimezoneChange }: Ev
                 {/* Duration */}
                 <div className="flex items-center gap-2 text-sm text-zinc-300">
                     <Clock className="h-4 w-4" />
-                    <span>{formatDuration(event.durationMinutes)}</span>
+                    <span>{formatDuration(durationMinutes)}</span>
                 </div>
 
                 {/* Meeting type */}

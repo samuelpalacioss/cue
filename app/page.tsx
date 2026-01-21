@@ -14,7 +14,7 @@ const mockEvent: EventData = {
   id: "1",
   slug: "mock-event",
   title: "Consulta de 30 minutos",
-  durationMinutes: 30,
+  defaultOptionId: 1,
   meetingType: "google_meet",
   requiresConfirmation: true,
   owners: [
@@ -23,6 +23,10 @@ const mockEvent: EventData = {
       avatarUrl: undefined,
       role: "Consultor"
     }
+  ],
+  eventOptions: [
+    { id: 1, durationMinutes: 30, capacity: 1 },
+    { id: 2, durationMinutes: 60, capacity: 1 }
   ]
 };
 

@@ -69,12 +69,12 @@ async function seed() {
     const durationsData = await db
       .insert(durations)
       .values([
-        { duration: "15 minutes" },
-        { duration: "30 minutes" },
-        { duration: "45 minutes" },
-        { duration: "1 hour" },
-        { duration: "1 hour 30 minutes" },
-        { duration: "2 hours" },
+        { durationMinutes: 30 },
+        { durationMinutes: 45 },
+        { durationMinutes: 60 },
+        { durationMinutes: 90 },
+        { durationMinutes: 120 },
+        { durationMinutes: 150 },
       ])
       .returning();
     console.log(`✅ Created ${durationsData.length} durations`);
@@ -309,18 +309,21 @@ async function seed() {
           eventId: eventsData[0].id,
           durationId: durationsData[3].id, // 1 hora
           capacity: 1,
+          isDefault: true
         },
         // Coaching Profesional options
         {
           eventId: eventsData[1].id,
           durationId: durationsData[3].id, // 1 hora
           capacity: 1,
+          isDefault: true
         },
         // Consulta Médica options
         {
           eventId: eventsData[2].id,
           durationId: durationsData[1].id, // 30 minutos
           capacity: 1,
+          isDefault: true
         },
         {
           eventId: eventsData[2].id,
@@ -331,18 +334,20 @@ async function seed() {
         {
           eventId: eventsData[3].id,
           durationId: durationsData[3].id, // 1 hora
-          capacity: 5,
+          capacity: 5
         },
         {
           eventId: eventsData[3].id,
           durationId: durationsData[4].id, // 1.5 horas
           capacity: 3,
+          isDefault: true
         },
         // Reunión Editorial options
         {
           eventId: eventsData[4].id,
           durationId: durationsData[3].id, // 1 hora
           capacity: 1,
+          isDefault: true,
         },
       ])
       .returning();
@@ -460,8 +465,6 @@ async function seed() {
           dayOfWeek: "monday",
           startTime: "09:00:00",
           endTime: "17:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -471,8 +474,6 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "09:00:00",
           endTime: "17:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -482,8 +483,6 @@ async function seed() {
           dayOfWeek: "wednesday",
           startTime: "09:00:00",
           endTime: "17:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -493,8 +492,6 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "09:00:00",
           endTime: "17:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -504,8 +501,6 @@ async function seed() {
           dayOfWeek: "friday",
           startTime: "09:00:00",
           endTime: "17:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
 
@@ -518,8 +513,6 @@ async function seed() {
           dayOfWeek: "monday",
           startTime: "10:00:00",
           endTime: "18:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -529,8 +522,6 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "10:00:00",
           endTime: "18:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -540,8 +531,6 @@ async function seed() {
           dayOfWeek: "wednesday",
           startTime: "10:00:00",
           endTime: "18:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -551,8 +540,6 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "10:00:00",
           endTime: "18:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -562,8 +549,6 @@ async function seed() {
           dayOfWeek: "friday",
           startTime: "10:00:00",
           endTime: "18:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
 
@@ -576,8 +561,6 @@ async function seed() {
           dayOfWeek: "monday",
           startTime: "08:00:00",
           endTime: "20:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -587,8 +570,6 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "08:00:00",
           endTime: "20:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -598,8 +579,6 @@ async function seed() {
           dayOfWeek: "wednesday",
           startTime: "08:00:00",
           endTime: "20:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -609,8 +588,6 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "08:00:00",
           endTime: "20:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -620,8 +597,6 @@ async function seed() {
           dayOfWeek: "friday",
           startTime: "08:00:00",
           endTime: "20:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -631,8 +606,6 @@ async function seed() {
           dayOfWeek: "saturday",
           startTime: "08:00:00",
           endTime: "14:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
 
@@ -645,8 +618,6 @@ async function seed() {
           dayOfWeek: "monday",
           startTime: "06:00:00",
           endTime: "21:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -656,8 +627,6 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "06:00:00",
           endTime: "21:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -667,8 +636,6 @@ async function seed() {
           dayOfWeek: "wednesday",
           startTime: "06:00:00",
           endTime: "21:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -678,8 +645,6 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "06:00:00",
           endTime: "21:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -689,8 +654,6 @@ async function seed() {
           dayOfWeek: "friday",
           startTime: "06:00:00",
           endTime: "21:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -700,8 +663,6 @@ async function seed() {
           dayOfWeek: "saturday",
           startTime: "07:00:00",
           endTime: "15:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
 
@@ -714,8 +675,6 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "14:00:00",
           endTime: "18:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
         {
@@ -725,8 +684,6 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "14:00:00",
           endTime: "18:00:00",
-          validFrom: null,
-          validUntil: null,
           isActive: true,
         },
       ])

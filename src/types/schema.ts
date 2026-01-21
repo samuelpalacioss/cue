@@ -4,12 +4,19 @@ export interface TimeSlot {
     available: boolean;
 }
 
+export interface EventOption {
+    id: number;
+    durationMinutes: number;
+    capacity: number;
+}
+
 export interface EventData {
     id: string;
     slug: string;
     title: string;
-    durationMinutes: number;
+    defaultOptionId: number; // ID of the default event option
     meetingType: 'google_meet' | 'zoom' | 'phone' | 'in_person';
     requiresConfirmation: boolean;
     owners: Array<{ name: string; avatarUrl?: string; role?: string }>;
+    eventOptions: EventOption[]; // All available booking options
 }
