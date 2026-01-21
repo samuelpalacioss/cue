@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button"
-import { TimeSlot } from "@/src/lib/types/schema"
+import { TimeSlot } from "@/src/types/schema";
 
 interface TimeSlotButtonProps {
     slot: TimeSlot;

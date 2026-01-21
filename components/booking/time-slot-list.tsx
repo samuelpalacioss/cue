@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TimeSlot } from "@/src/lib/types/schema";
+import { TimeSlot } from "@/src/types/schema";
 import TimeSlotButton from "./time-slot-button";
 
 interface TimeSlotListProps {
