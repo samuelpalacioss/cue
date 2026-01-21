@@ -27,7 +27,7 @@ function BookingPageClientInner({
   username,
   urlSlug,
 }: BookingPageClientProps) {
-  const { params, setParam, setParams } = useSearchQueryParams();
+  const { params, setParam, setParams, replaceParams } = useSearchQueryParams();
 
   // Local state for fetched data
   const [availableDates, setAvailableDates] = useState<Set<string>>(new Set());
@@ -44,6 +44,16 @@ function BookingPageClientInner({
       return 'UTC';
     }
   });
+
+  // Initialize month param in URL if not present (on fresh load)
+  // Uses replace so back button doesn't go to clean URL
+  useEffect(() => {
+    if (!params.month) {
+      const now = today(getLocalTimeZone());
+      const monthStr = `${now.year}-${String(now.month).padStart(2, '0')}`;
+      replaceParams({ month: monthStr });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Derive selected event option ID from duration param
   const selectedEventOptionId = (() => {

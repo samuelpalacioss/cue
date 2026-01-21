@@ -1,6 +1,5 @@
 "use client"
 
-import { useRef } from "react"
 import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date"
 import { Calendar, CalendarGrid, CalendarGridHeader, CalendarGridBody, CalendarCell, CalendarHeaderCell, Heading, Button, I18nProvider } from "react-aria-components"
 
@@ -114,37 +113,12 @@ export default function CalendarPanel({
     locale = 'es-ES',
     onVisibleMonthChange
 }: CalendarPanelProps) {
-    // Track the previous focused month to detect actual month changes
-    const prevFocusedMonthRef = useRef<{ year: number; month: number } | null>(null)
-    // Skip the initial focus event that fires on mount
-    const isInitialFocusRef = useRef(true)
-
-    // Handle focus changes from React Aria Calendar (fires when user navigates months)
-    function handleFocusChange(focusedDate: CalendarDate) {
-        const newMonth = { year: focusedDate.year, month: focusedDate.month }
-        const prev = prevFocusedMonthRef.current
-
-        // Skip the initial focus event - don't update URL on mount
-        if (isInitialFocusRef.current) {
-            isInitialFocusRef.current = false
-            prevFocusedMonthRef.current = newMonth
-            return
-        }
-
-        // Only notify parent if the month actually changed
-        if (!prev || prev.year !== newMonth.year || prev.month !== newMonth.month) {
-            prevFocusedMonthRef.current = newMonth
-            onVisibleMonthChange?.(newMonth.year, newMonth.month)
-        }
-    }
-
     return (
         <div className="bg-transparent p-5 md:border-r md:border-zinc-800 md:bg-zinc-900 md:p-6">
             <I18nProvider locale={locale}>
                 <Calendar
                     value={selectedDate}
                     onChange={onDateChange}
-                    onFocusChange={handleFocusChange}
                     className="w-full"
                     aria-label="Select a date"
                     minValue={today(getLocalTimeZone()).subtract({ days: 10 })}
@@ -164,11 +138,25 @@ export default function CalendarPanel({
                             year: 'numeric',
                         })
 
+                        // Calculate previous and next months for navigation handlers
+                        const handlePreviousMonth = () => {
+                            const newMonth = visibleMonth === 1 ? 12 : visibleMonth - 1
+                            const newYear = visibleMonth === 1 ? visibleYear - 1 : visibleYear
+                            onVisibleMonthChange?.(newYear, newMonth)
+                        }
+
+                        const handleNextMonth = () => {
+                            const newMonth = visibleMonth === 12 ? 1 : visibleMonth + 1
+                            const newYear = visibleMonth === 12 ? visibleYear + 1 : visibleYear
+                            onVisibleMonthChange?.(newYear, newMonth)
+                        }
+
                         return (
                             <>
                                 <header className="-mx-5 mb-4 flex items-center justify-between border-b border-t border-zinc-800 px-5 py-4 md:mx-0 md:border-0 md:px-0 md:py-0">
                                     <Button
                                         slot="previous"
+                                        onPress={handlePreviousMonth}
                                         className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-white transition-colors hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                                     >
                                         ‹
@@ -179,6 +167,7 @@ export default function CalendarPanel({
                                     </Heading>
                                     <Button
                                         slot="next"
+                                        onPress={handleNextMonth}
                                         className="flex h-10 w-10  cursor-pointer  items-center justify-center rounded-md text-white transition-colors hover:bg-zinc-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                                     >
                                         ›

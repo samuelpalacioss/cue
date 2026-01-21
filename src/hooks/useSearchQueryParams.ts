@@ -57,9 +57,25 @@ export function useSearchQueryParams() {
     router.push(`${pathname}?${updatedParams.toString()}`, { scroll: false });
   }
 
+  // Replace params without adding to history (useful for initialization)
+  function replaceParams(newParams: Partial<SearchParams>) {
+    const updatedParams = new URLSearchParams(searchParams.toString());
+
+    Object.entries(newParams).forEach(([key, value]) => {
+      if (value === undefined || value === null) {
+        updatedParams.delete(key);
+      } else {
+        updatedParams.set(key, String(value));
+      }
+    });
+
+    router.replace(`${pathname}?${updatedParams.toString()}`, { scroll: false });
+  }
+
   return {
     params,
     setParam,
     setParams,
+    replaceParams,
   };
 }
