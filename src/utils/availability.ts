@@ -1,21 +1,11 @@
 import type { EventData, TimeSlot } from '@/src/types/schema';
 import {
-  findAvailabilitySchedules,
+  findAvailabilitySchedulesForDate,
   findBookingsForDate,
   findBookingsForDateRange,
   findEventByUsernameAndSlug,
   findEventOptions,
 } from '@/src/db/dal';
-
-/**
- * Get day of week from date string (YYYY-MM-DD)
- * Returns lowercase day name: 'monday', 'tuesday', etc.
- */
-export function getDayOfWeek(date: string): string {
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  const dateObj = new Date(date + 'T00:00:00Z'); // Parse as UTC to avoid timezone issues
-  return days[dateObj.getUTCDay()];
-}
 
 /**
  * Generate time slots array from schedule
@@ -146,17 +136,6 @@ export async function getAvailableDatesForMonth(
 
   const durationMinutes = selectedOption.duration?.durationMinutes ?? 30;
 
-  // Get availability schedules
-  const schedules = await findAvailabilitySchedules(
-    event.id,
-    event.userId,
-    event.organizationId
-  );
-
-  if (schedules.length === 0) {
-    return { availableDates: [], availabilityCount: {} };
-  }
-
   // Calculate first and last day of month
   const firstDay = new Date(Date.UTC(year, month - 1, 1));
   const lastDay = new Date(Date.UTC(year, month, 0));
@@ -172,10 +151,14 @@ export async function getAvailableDatesForMonth(
   for (let day = 1; day <= lastDay.getUTCDate(); day++) {
     const currentDate = new Date(Date.UTC(year, month - 1, day));
     const dateStr = currentDate.toISOString().split('T')[0];
-    const dayOfWeek = getDayOfWeek(dateStr);
 
-    // Find schedules that match this day of week
-    const daySchedules = schedules.filter((schedule) => schedule.dayOfWeek === dayOfWeek);
+    // Find schedules for this specific date (handles both specific date and recurring schedules)
+    const daySchedules = await findAvailabilitySchedulesForDate(
+      event.id,
+      dateStr,
+      event.userId,
+      event.organizationId
+    );
 
     if (daySchedules.length === 0) continue;
 
@@ -243,17 +226,13 @@ export async function getTimeSlotsForDate(
 
   const durationMinutes = selectedOption.duration?.durationMinutes ?? 30;
 
-  // Get day of week
-  const dayOfWeek = getDayOfWeek(date);
-
-  // Get availability schedules for this day
-  const schedules = await findAvailabilitySchedules(
+  // Get availability schedules for this specific date (handles both specific date and recurring schedules)
+  const daySchedules = await findAvailabilitySchedulesForDate(
     event.id,
+    date,
     event.userId,
     event.organizationId
   );
-
-  const daySchedules = schedules.filter((schedule) => schedule.dayOfWeek === dayOfWeek);
 
   if (daySchedules.length === 0) return [];
 

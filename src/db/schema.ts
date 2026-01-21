@@ -311,9 +311,15 @@ export const userCustomers = pgTable(
  * - If eventId is NULL: Schedule applies to ALL events for the user/organization (global availability)
  * - If eventId is set: Schedule applies ONLY to that specific event (overrides global availability)
  *
+ * Schedule Type Constraint: Exactly one of dayOfWeek or specificDate must be set (not both, not neither)
+ * - If dayOfWeek is set (specificDate is null): Recurring weekly schedule (e.g., every Monday 9-5)
+ * - If specificDate is set (dayOfWeek is null): One-time schedule for a specific date (e.g., Feb 21 11-3)
+ *
  * Use Cases:
- * 1. Global: User works Mon-Fri 9-5 (eventId = null, applies to all their events)
- * 2. Event-specific: "Consultation" event only available Tue-Thu 2-4 (eventId set, overrides global)
+ * 1. Global recurring: User works Mon-Fri 9-5 (eventId = null, dayOfWeek set, applies to all their events)
+ * 2. Event-specific recurring: "Consultation" event only available Tue-Thu 2-4 (eventId set, dayOfWeek set)
+ * 3. Specific date override: On Feb 21, Maria can only work 11-3 (specificDate = '2024-02-21', dayOfWeek = null)
+ * 4. Specific date unavailable: On March 15, user is not available (specificDate set, isActive = false)
  */
 export const availabilitySchedules = pgTable(
   'AvailabilitySchedule',
@@ -326,7 +332,8 @@ export const availabilitySchedules = pgTable(
     eventId: varchar('event_id', { length: 255 }).references(() => events.id, {
       onDelete: 'cascade',
     }), // nullable - if null, applies to all events; if set, only to this event
-    dayOfWeek: dayOfWeekEnum('day_of_week').notNull(), // monday, tuesday, etc.
+    dayOfWeek: dayOfWeekEnum('day_of_week'), // nullable - for recurring schedules (e.g., every Monday)
+    specificDate: date('specific_date'), // nullable - for one-time date overrides (e.g., Feb 21, 2024)
     startTime: time('start_time').notNull(), // e.g., '09:00:00'
     endTime: time('end_time').notNull(), // e.g., '17:00:00'
     isActive: boolean('is_active').default(true).notNull(),
@@ -340,6 +347,7 @@ export const availabilitySchedules = pgTable(
     ),
     eventIdIdx: index('AvailabilitySchedule_event_id_idx').on(table.eventId),
     dayOfWeekIdx: index('AvailabilitySchedule_day_of_week_idx').on(table.dayOfWeek),
+    specificDateIdx: index('AvailabilitySchedule_specific_date_idx').on(table.specificDate),
     activeIdx: index('AvailabilitySchedule_active_idx').on(table.isActive),
   })
 );

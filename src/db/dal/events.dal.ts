@@ -199,3 +199,109 @@ export async function findBookingsForDateRange(
 
   return result;
 }
+
+/**
+ * Find availability schedules for a specific date
+ * Priority order:
+ * 1. Event-specific schedule for the specific date
+ * 2. Global schedule for the specific date (user or organization)
+ * 3. Event-specific recurring schedule for the day of week
+ * 4. Global recurring schedule for the day of week (user or organization)
+ */
+export async function findAvailabilitySchedulesForDate(
+  eventId: string,
+  date: string,
+  userId?: number | null,
+  organizationId?: number | null
+): Promise<AvailabilitySchedule[]> {
+  // Calculate day of week from date
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const dateObj = new Date(date + 'T00:00:00Z'); // Parse as UTC to avoid timezone issues
+  const dayOfWeek = days[dateObj.getUTCDay()];
+
+  // First, try to find specific date schedules (highest priority)
+  const specificDateConditions = [];
+
+  // Event-specific schedule for this date
+  specificDateConditions.push(
+    and(
+      eq(availabilitySchedules.eventId, eventId),
+      eq(availabilitySchedules.specificDate, date)
+    )
+  );
+
+  // Global schedule for this specific date (user)
+  if (userId) {
+    specificDateConditions.push(
+      and(
+        eq(availabilitySchedules.userId, userId),
+        sql`${availabilitySchedules.eventId} IS NULL`,
+        eq(availabilitySchedules.specificDate, date)
+      )
+    );
+  }
+
+  // Global schedule for this specific date (organization)
+  if (organizationId) {
+    specificDateConditions.push(
+      and(
+        eq(availabilitySchedules.organizationId, organizationId),
+        sql`${availabilitySchedules.eventId} IS NULL`,
+        eq(availabilitySchedules.specificDate, date)
+      )
+    );
+  }
+
+  const specificDateSchedules = await db
+    .select()
+    .from(availabilitySchedules)
+    .where(and(eq(availabilitySchedules.isActive, true), or(...specificDateConditions)));
+
+  // If we found specific date schedules, return them (they override recurring schedules)
+  if (specificDateSchedules.length > 0) {
+    return specificDateSchedules;
+  }
+
+  // Otherwise, fall back to recurring schedules for the day of week
+  const recurringConditions = [];
+
+  // Event-specific recurring schedule
+  recurringConditions.push(
+    and(
+      eq(availabilitySchedules.eventId, eventId),
+      sql`${availabilitySchedules.dayOfWeek} = ${dayOfWeek}`,
+      sql`${availabilitySchedules.specificDate} IS NULL`
+    )
+  );
+
+  // Global recurring schedule (user)
+  if (userId) {
+    recurringConditions.push(
+      and(
+        eq(availabilitySchedules.userId, userId),
+        sql`${availabilitySchedules.eventId} IS NULL`,
+        sql`${availabilitySchedules.dayOfWeek} = ${dayOfWeek}`,
+        sql`${availabilitySchedules.specificDate} IS NULL`
+      )
+    );
+  }
+
+  // Global recurring schedule (organization)
+  if (organizationId) {
+    recurringConditions.push(
+      and(
+        eq(availabilitySchedules.organizationId, organizationId),
+        sql`${availabilitySchedules.eventId} IS NULL`,
+        sql`${availabilitySchedules.dayOfWeek} = ${dayOfWeek}`,
+        sql`${availabilitySchedules.specificDate} IS NULL`
+      )
+    );
+  }
+
+  const recurringSchedules = await db
+    .select()
+    .from(availabilitySchedules)
+    .where(and(eq(availabilitySchedules.isActive, true), or(...recurringConditions)));
+
+  return recurringSchedules;
+}
