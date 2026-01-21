@@ -55,16 +55,28 @@ export async function findEventByUsernameAndSlug(
       organization: organizations,
     })
     .from(events)
-    .innerJoin(users, eq(events.userId, users.id))
+    .leftJoin(users, or(
+      eq(events.userId, users.id),
+      and(
+        sql`${events.organizationId} IS NOT NULL`,
+        eq(events.organizationId, users.organizationId),
+        eq(users.username, username)
+      )
+    ))
     .leftJoin(clients, eq(users.clientId, clients.id))
     .leftJoin(organizations, eq(events.organizationId, organizations.id))
     .where(
       and(
         eq(events.urlSlug, slug),
-        eq(users.username, username),
         or(
-          eq(events.userId, users.id),
-          eq(events.organizationId, users.organizationId)
+          and(
+            sql`${events.userId} IS NOT NULL`,
+            eq(users.username, username)
+          ),
+          and(
+            sql`${events.organizationId} IS NOT NULL`,
+            eq(users.username, username)
+          )
         )
       )
     )
