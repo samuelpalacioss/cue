@@ -7,7 +7,8 @@ import * as schema from "@/src/db/schema";
 const client = postgres(env.DATABASE_URL!);
 
 // Create the drizzle database instance
-const db = drizzle(client, { schema, logger: true });
+// Keep SQL logs off by default; enable with DB_LOGGER=true when needed
+const db = drizzle(client, { schema, logger: env.DB_LOGGER === 'true' });
 
 export default db;
 export { client };

@@ -149,6 +149,7 @@ function BookingPageClientInner({
 
   function handleMonthChange(year: number, month: number) {
     const monthStr = `${year}-${String(month).padStart(2, '0')}`;
+    // console.log('handleMonthChange called:', { year, month, monthStr });
     setParam('month', monthStr);
   }
 
