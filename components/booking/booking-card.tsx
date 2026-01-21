@@ -12,9 +12,11 @@ interface BookingCardProps {
     availableDates?: Set<string>;
     availabilityCount?: Map<string, number>;
     timeSlots?: TimeSlot[];
+    selectedSlotTime?: string;
     onDateChange: (date: CalendarDate) => void;
     onTimezoneChange: (tz: string) => void;
     onMonthChange?: (year: number, month: number) => void;
+    onSlotSelect?: (slot: TimeSlot | undefined) => void;
 }
 
 export default function BookingCard({
@@ -24,9 +26,11 @@ export default function BookingCard({
     availableDates = new Set(),
     availabilityCount = new Map(),
     timeSlots = [],
+    selectedSlotTime,
     onDateChange,
     onTimezoneChange,
     onMonthChange,
+    onSlotSelect,
 }: BookingCardProps) {
     return (
         <div>
@@ -57,7 +61,11 @@ export default function BookingCard({
 
                             {/* Right Panel: Time Slots */}
                             <TimeSlotsPanel selectedDate={selectedDate}>
-                                <TimeSlotList slots={timeSlots} />
+                                <TimeSlotList
+                                    slots={timeSlots}
+                                    selectedSlotTime={selectedSlotTime}
+                                    onSlotSelect={onSlotSelect}
+                                />
                             </TimeSlotsPanel>
                         </div>
                     </div>

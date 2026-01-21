@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useEffect } from "react"
 import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date"
 import { Calendar, CalendarGrid, CalendarGridHeader, CalendarGridBody, CalendarCell, CalendarHeaderCell, Heading, Button, I18nProvider } from "react-aria-components"
 
@@ -114,7 +114,23 @@ export default function CalendarPanel({
     locale = 'es-ES',
     onVisibleMonthChange
 }: CalendarPanelProps) {
+    // Ref to capture current visible month during render
+    const currentVisibleMonthRef = useRef<{ year: number; month: number } | null>(null)
+    // Ref to track previous value for comparison in effect
     const prevVisibleMonthRef = useRef<{ year: number; month: number } | null>(null)
+
+    // Call callback after render when visible month changes
+    useEffect(() => {
+        const current = currentVisibleMonthRef.current
+        const prev = prevVisibleMonthRef.current
+
+        if (current && onVisibleMonthChange) {
+            if (!prev || prev.year !== current.year || prev.month !== current.month) {
+                prevVisibleMonthRef.current = current
+                onVisibleMonthChange(current.year, current.month)
+            }
+        }
+    })
 
     return (
         <div className="bg-transparent p-5 md:border-r md:border-zinc-800 md:bg-zinc-900 md:p-6">
@@ -141,17 +157,8 @@ export default function CalendarPanel({
                             year: 'numeric',
                         })
 
-                        // Notify parent if visible month changed
-                        const currentVisibleMonth = { year: visibleYear, month: visibleMonth }
-                        if (
-                            !prevVisibleMonthRef.current ||
-                            prevVisibleMonthRef.current.year !== visibleYear ||
-                            prevVisibleMonthRef.current.month !== visibleMonth
-                        ) {
-                            prevVisibleMonthRef.current = currentVisibleMonth
-                            // Call callback after render completes to avoid issues
-                            onVisibleMonthChange?.(visibleYear, visibleMonth)
-                        }
+                        // Capture current visible month in ref (safe during render)
+                        currentVisibleMonthRef.current = { year: visibleYear, month: visibleMonth }
 
                         return (
                             <>

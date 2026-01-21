@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getEventData } from '@/src/utils/availability';
+import BookingPageClient from './booking-page-client';
 
 type PageProps = {
   params: Promise<{
@@ -27,9 +28,14 @@ export default async function BookingPage({ params }: PageProps) {
     notFound();
   }
 
-  // TODO: Pass to client component wrapper in Phase 4
-  // For now, display basic event information
   return (
+    <>
+    <BookingPageClient
+      eventData={eventData}
+      username={username}
+      urlSlug={urlSlug}
+    />
+
     <div className="min-h-screen p-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-4">{eventData.title}</h1>
@@ -53,5 +59,6 @@ export default async function BookingPage({ params }: PageProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import { TimeSlot } from "@/src/types/schema";
 import TimeSlotButton from "./time-slot-button";
 
 interface TimeSlotListProps {
     slots: TimeSlot[];
+    selectedSlotTime?: string;
+    onSlotSelect?: (slot: TimeSlot | undefined) => void;
 }
 
-export default function TimeSlotList({ slots }: TimeSlotListProps) {
-    const [selectedSlot, setSelectedSlot] = useState<TimeSlot | undefined>(undefined);
-
+export default function TimeSlotList({
+    slots,
+    selectedSlotTime,
+    onSlotSelect
+}: TimeSlotListProps) {
     if (slots.length === 0) {
         return (
             <p className="py-8 text-center text-sm text-zinc-400">
@@ -22,8 +25,7 @@ export default function TimeSlotList({ slots }: TimeSlotListProps) {
     return (
         <>
             {slots.map((slot) => {
-                // Check if the slot is currently selected
-                const isCurrentlySelected = selectedSlot?.startTime === slot.startTime;
+                const isCurrentlySelected = selectedSlotTime === slot.startTime;
 
                 return (
                     <TimeSlotButton
@@ -31,14 +33,12 @@ export default function TimeSlotList({ slots }: TimeSlotListProps) {
                         slot={slot}
                         isSelected={isCurrentlySelected}
                         onClick={() => {
-                            // If clicking the already-selected slot, deselect it
-                            // Otherwise, select it
+                            if (!onSlotSelect) return;
+
                             if (isCurrentlySelected) {
-                                console.log(`Deselecting slot: ${slot.startTime}`);
-                                setSelectedSlot(undefined);
+                                onSlotSelect(undefined);
                             } else {
-                                console.log(`Selecting slot: ${slot.startTime}`);
-                                setSelectedSlot(slot);
+                                onSlotSelect(slot);
                             }
                         }}
                         displayTime={slot.startTime}
