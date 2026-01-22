@@ -6,6 +6,7 @@ import {
   getLocalTimeZone,
   ZonedDateTime,
   toCalendarDate,
+  toTimeZone,
 } from "@internationalized/date";
 
 export type TimeFormat = "12h" | "24h";
@@ -25,19 +26,55 @@ export function formatCalendarDate(date: CalendarDate, locale: string = "es-ES")
 
 /**
  * Format time string (HH:MM) to 12h or 24h format
+ * Optionally converts time from source timezone to target timezone
  * @param timeStr - Time string in HH:MM format (24h)
  * @param format - '12h' or '24h'
+ * @param date - Optional CalendarDate to use for timezone conversion
+ * @param targetTimezone - Optional target timezone (e.g., 'America/New_York')
+ * @param sourceTimezone - Optional source timezone (default: 'UTC')
  * @returns Formatted time string
  */
-export function formatTime(timeStr: string, format: TimeFormat): string {
+export function formatTime(
+  timeStr: string,
+  format: TimeFormat,
+  date?: CalendarDate,
+  targetTimezone?: string,
+  sourceTimezone: string = "UTC",
+): string {
+  let convertedTimeStr = timeStr;
+
+  // Convert timezone if date and targetTimezone are provided
+  if (date && targetTimezone && targetTimezone !== sourceTimezone) {
+    try {
+      // Parse the time components
+      const [hours, minutes] = timeStr.split(":").map(Number);
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        // Create a zoned datetime in the source timezone
+        const sourceDateTime = parseZonedDateTime(
+          `${date.year}-${String(date.month).padStart(2, "0")}-${String(date.day).padStart(2, "0")}T${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00[${sourceTimezone}]`,
+        );
+
+        // Convert to target timezone
+        const targetDateTime = toTimeZone(sourceDateTime, targetTimezone);
+
+        // Extract time portion in HH:MM format
+        convertedTimeStr = `${String(targetDateTime.hour).padStart(2, "0")}:${String(targetDateTime.minute).padStart(2, "0")}`;
+      }
+    } catch (error) {
+      // If conversion fails, use original time
+      console.warn("Timezone conversion failed:", error);
+    }
+  }
+
+  // Format to 12h or 24h
   if (format === "24h") {
-    return timeStr;
+    return convertedTimeStr;
   }
 
   // Convert 24h to 12h format
-  const [hours, minutes] = timeStr.split(":").map(Number);
+  const [hours, minutes] = convertedTimeStr.split(":").map(Number);
   if (isNaN(hours) || isNaN(minutes)) {
-    return timeStr; // Return original if parsing fails
+    return convertedTimeStr; // Return original if parsing fails
   }
 
   const period = hours >= 12 ? "pm" : "am";

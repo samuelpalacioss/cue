@@ -36,6 +36,13 @@
       "when": 1769022866839,
       "tag": "0004_third_spirit",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1769113064967,
+      "tag": "0005_daily_obadiah_stane",
+      "breakpoints": true
     }
   ]
 }

@@ -11,6 +11,7 @@ import { TimeFormat } from "@/src/utils/booking/date-utils";
 import { DEFAULT_TIME_FORMAT } from "@/src/utils/constants";
 
 const TIME_FORMAT_STORAGE_KEY = "booking-time-format";
+const TIMEZONE_STORAGE_KEY = "booking-timezone";
 
 interface BookingPageClientProps {
   eventData: EventData;
@@ -40,14 +41,27 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
     }
   }, [timeFormat]);
 
-  // Default timezone to local timezone
-  const timezone = (() => {
+  // Manage timezone state with localStorage persistence
+  const [timezone, setTimezone] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(TIMEZONE_STORAGE_KEY);
+      if (stored) {
+        return stored;
+      }
+    }
     try {
       return getLocalTimeZone();
     } catch {
       return "UTC";
     }
-  })();
+  });
+
+  // Update localStorage when timezone changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(TIMEZONE_STORAGE_KEY, timezone);
+    }
+  }, [timezone]);
 
   // Initialize month param in URL if not present (on fresh load)
   // Uses replace so back button doesn't go to clean URL
@@ -153,11 +167,11 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
             urlSlug,
             date,
             timezone,
-            String(selectedEventOptionId)
+            String(selectedEventOptionId),
           ),
           queryFn: async () => {
             const url = `/api/events/${username}/${urlSlug}/slots?date=${date}&timezone=${encodeURIComponent(
-              timezone
+              timezone,
             )}&eventOptionId=${selectedEventOptionId}`;
             const response = await fetch(url);
             if (!response.ok) {
@@ -183,15 +197,14 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
   // Event handlers
   function handleDateChange(date: CalendarDate) {
     const dateStr = `${date.year}-${String(date.month).padStart(2, "0")}-${String(
-      date.day
+      date.day,
     ).padStart(2, "0")}`;
     // Clear slot selection when date changes
     setParams({ date: dateStr, slot: undefined });
   }
 
-  function handleTimezoneChange(_tz: string) {
-    // Timezone changes would require state management
-    // For now, we use the detected timezone
+  function handleTimezoneChange(tz: string) {
+    setTimezone(tz);
   }
 
   function handleMonthChange(year: number, month: number) {

@@ -1,0 +1,1 @@
+ALTER TABLE "AvailabilitySchedule" ADD COLUMN "timezone" varchar(100) DEFAULT 'America/Caracas' NOT NULL;

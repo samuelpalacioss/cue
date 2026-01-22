@@ -1,11 +1,11 @@
-import type { EventData, TimeSlot } from '@/src/types/schema';
+import type { EventData, TimeSlot } from "@/src/types/schema";
 import {
   findAvailabilitySchedulesForDate,
   findBookingsForDate,
   findBookingsForDateRange,
   findEventByUsernameAndSlug,
   findEventOptions,
-} from '@/src/db/dal';
+} from "@/src/db/dal";
 
 /**
  * Get today's date in UTC as a string (YYYY-MM-DD format)
@@ -13,7 +13,7 @@ import {
 function getTodayDateString(): string {
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
-  return today.toISOString().split('T')[0];
+  return today.toISOString().split("T")[0];
 }
 
 /**
@@ -26,13 +26,13 @@ function getTodayDateString(): string {
 export function generateTimeSlots(
   startTime: string,
   endTime: string,
-  durationMinutes: number
+  durationMinutes: number,
 ): Array<{ start: string; end: string }> {
   const slots: Array<{ start: string; end: string }> = [];
 
   // Parse start and end times (HH:MM format)
-  const [startHour, startMin] = startTime.split(':').map(Number);
-  const [endHour, endMin] = endTime.split(':').map(Number);
+  const [startHour, startMin] = startTime.split(":").map(Number);
+  const [endHour, endMin] = endTime.split(":").map(Number);
 
   // Convert to minutes from midnight
   let currentMinutes = startHour * 60 + startMin;
@@ -46,8 +46,8 @@ export function generateTimeSlots(
     const slotEndMin = slotEndMinutes % 60;
 
     slots.push({
-      start: `${String(slotStartHour).padStart(2, '0')}:${String(slotStartMin).padStart(2, '0')}`,
-      end: `${String(slotEndHour).padStart(2, '0')}:${String(slotEndMin).padStart(2, '0')}`,
+      start: `${String(slotStartHour).padStart(2, "0")}:${String(slotStartMin).padStart(2, "0")}`,
+      end: `${String(slotEndHour).padStart(2, "0")}:${String(slotEndMin).padStart(2, "0")}`,
     });
 
     currentMinutes += durationMinutes;
@@ -66,7 +66,7 @@ export async function getEventData(username: string, slug: string): Promise<Even
   // Get all event options
   const options = await findEventOptions(event.id);
   if (options.length === 0) {
-    throw new Error('Event has no options configured');
+    throw new Error("Event has no options configured");
   }
 
   // Transform options to EventOption format
@@ -79,7 +79,7 @@ export async function getEventData(username: string, slug: string): Promise<Even
   // Find default option
   const defaultOption = options.find((opt) => opt.isDefault);
   if (!defaultOption) {
-    throw new Error('Event has no default option configured');
+    throw new Error("Event has no default option configured");
   }
   const defaultOptionId = defaultOption.id;
 
@@ -89,14 +89,14 @@ export async function getEventData(username: string, slug: string): Promise<Even
   if (event.user && event.user.client) {
     owners.push({
       name: `${event.user.client.firstName} ${event.user.client.lastName}`,
-      role: event.user.role === 'admin' ? 'Administrator' : 'User',
+      role: event.user.role === "admin" ? "Administrator" : "User",
     });
   }
 
   if (event.organization) {
     owners.push({
       name: event.organization.name,
-      role: 'Organization',
+      role: "Organization",
     });
   }
 
@@ -105,7 +105,7 @@ export async function getEventData(username: string, slug: string): Promise<Even
     slug: event.urlSlug,
     title: event.title,
     defaultOptionId,
-    meetingType: 'google_meet', // Hardcoded for MVP
+    meetingType: "google_meet", // Hardcoded for MVP
     requiresConfirmation: false, // Hardcoded for MVP
     owners,
     eventOptions,
@@ -121,7 +121,7 @@ export async function getAvailableDatesForMonth(
   year: number,
   month: number,
   eventOptionId?: number,
-  timezone: string = 'UTC'
+  timezone: string = "UTC",
 ): Promise<{
   availableDates: string[];
   availabilityCount: Record<string, number>;
@@ -153,8 +153,8 @@ export async function getAvailableDatesForMonth(
   const todayStr = getTodayDateString();
 
   // Get all bookings for the month
-  const startDateStr = firstDay.toISOString().split('T')[0];
-  const endDateStr = lastDay.toISOString().split('T')[0];
+  const startDateStr = firstDay.toISOString().split("T")[0];
+  const endDateStr = lastDay.toISOString().split("T")[0];
   const bookings = await findBookingsForDateRange(selectedOption.id, startDateStr, endDateStr);
 
   const availabilityCount: Record<string, number> = {};
@@ -162,7 +162,7 @@ export async function getAvailableDatesForMonth(
   // Iterate through each day in the month
   for (let day = 1; day <= lastDay.getUTCDate(); day++) {
     const currentDate = new Date(Date.UTC(year, month - 1, day));
-    const dateStr = currentDate.toISOString().split('T')[0];
+    const dateStr = currentDate.toISOString().split("T")[0];
 
     // Skip past dates
     if (dateStr < todayStr) continue;
@@ -172,7 +172,7 @@ export async function getAvailableDatesForMonth(
       event.id,
       dateStr,
       event.userId,
-      event.organizationId
+      event.organizationId,
     );
 
     if (daySchedules.length === 0) continue;
@@ -224,7 +224,7 @@ export async function getTimeSlotsForDate(
   slug: string,
   date: string,
   eventOptionId?: number,
-  timezone: string = 'UTC'
+  timezone: string = "UTC",
 ): Promise<TimeSlot[]> {
   // Don't return time slots for past dates
   const todayStr = getTodayDateString();
@@ -250,10 +250,13 @@ export async function getTimeSlotsForDate(
     event.id,
     date,
     event.userId,
-    event.organizationId
+    event.organizationId,
   );
 
   if (daySchedules.length === 0) return [];
+
+  // Get the source timezone from the first schedule (all schedules for a user/org should have the same timezone)
+  const sourceTimezone = daySchedules[0].timezone || 'UTC';
 
   // Generate time slots
   const allSlots: Array<{ start: string; end: string }> = [];
@@ -274,13 +277,12 @@ export async function getTimeSlotsForDate(
       startTime: slot.start,
       endTime: slot.end,
       available,
+      sourceTimezone,
     };
   });
 
   // Remove duplicate slots and sort by start time
-  const uniqueSlots = Array.from(
-    new Map(timeSlots.map((slot) => [slot.startTime, slot])).values()
-  );
+  const uniqueSlots = Array.from(new Map(timeSlots.map((slot) => [slot.startTime, slot])).values());
 
   return uniqueSlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
 }

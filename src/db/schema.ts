@@ -322,6 +322,11 @@ export const userCustomers = pgTable(
  * - If dayOfWeek is set (specificDate is null): Recurring weekly schedule (e.g., every Monday 9-5)
  * - If specificDate is set (dayOfWeek is null): One-time schedule for a specific date (e.g., Feb 21 11-3)
  *
+ * Timezone:
+ * - The timezone field stores the IANA timezone identifier (e.g., 'America/Caracas', 'America/New_York')
+ * - startTime and endTime are interpreted in this timezone
+ * - When displaying to users in different timezones, times should be converted appropriately
+ *
  * Use Cases:
  * 1. Global recurring: User works Mon-Fri 9-5 (eventId = null, dayOfWeek set, applies to all their events)
  * 2. Event-specific recurring: "Consultation" event only available Tue-Thu 2-4 (eventId set, dayOfWeek set)
@@ -343,6 +348,7 @@ export const availabilitySchedules = pgTable(
     specificDate: date('specific_date'), // nullable - for one-time date overrides (e.g., Feb 21, 2024)
     startTime: time('start_time').notNull(), // e.g., '09:00:00'
     endTime: time('end_time').notNull(), // e.g., '17:00:00'
+    timezone: varchar('timezone', { length: 100 }).notNull().default('America/Caracas'), // IANA timezone identifier
     isActive: boolean('is_active').default(true).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),

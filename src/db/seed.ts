@@ -457,7 +457,7 @@ async function seed() {
       .insert(availabilitySchedules)
       .values([
         // ========== GLOBAL AVAILABILITY - María (Personal User) ==========
-        // Monday to Friday, 9:00 - 17:00
+        // Monday to Friday, 9:00 - 17:00 (America/Caracas time)
         {
           userId: usersData[0].id,
           organizationId: null,
@@ -465,6 +465,7 @@ async function seed() {
           dayOfWeek: "monday",
           startTime: "09:00:00",
           endTime: "17:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -474,6 +475,7 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "09:00:00",
           endTime: "17:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -483,6 +485,7 @@ async function seed() {
           dayOfWeek: "wednesday",
           startTime: "09:00:00",
           endTime: "17:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -492,6 +495,7 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "09:00:00",
           endTime: "17:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -501,11 +505,12 @@ async function seed() {
           dayOfWeek: "friday",
           startTime: "09:00:00",
           endTime: "17:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
 
         // ========== GLOBAL AVAILABILITY - Carlos (Personal User) ==========
-        // Monday to Friday, 10:00 - 18:00
+        // Monday to Friday, 10:00 - 18:00 (America/Caracas time)
         {
           userId: usersData[1].id,
           organizationId: null,
@@ -513,6 +518,7 @@ async function seed() {
           dayOfWeek: "monday",
           startTime: "10:00:00",
           endTime: "18:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -522,6 +528,7 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "10:00:00",
           endTime: "18:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -531,6 +538,7 @@ async function seed() {
           dayOfWeek: "wednesday",
           startTime: "10:00:00",
           endTime: "18:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -540,6 +548,7 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "10:00:00",
           endTime: "18:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -549,11 +558,12 @@ async function seed() {
           dayOfWeek: "friday",
           startTime: "10:00:00",
           endTime: "18:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
 
         // ========== ORGANIZATIONAL AVAILABILITY - Centro Clínico CaracasMed ==========
-        // Monday to Saturday, 8:00 - 20:00 (Extended hours)
+        // Monday to Saturday, 8:00 - 20:00 (Extended hours, America/Caracas time)
         {
           userId: null,
           organizationId: organizationsData[0].id,
@@ -561,6 +571,7 @@ async function seed() {
           dayOfWeek: "monday",
           startTime: "08:00:00",
           endTime: "20:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -570,6 +581,7 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "08:00:00",
           endTime: "20:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -579,6 +591,7 @@ async function seed() {
           dayOfWeek: "wednesday",
           startTime: "08:00:00",
           endTime: "20:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -588,6 +601,7 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "08:00:00",
           endTime: "20:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -597,6 +611,7 @@ async function seed() {
           dayOfWeek: "friday",
           startTime: "08:00:00",
           endTime: "20:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -606,11 +621,12 @@ async function seed() {
           dayOfWeek: "saturday",
           startTime: "08:00:00",
           endTime: "14:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
 
         // ========== ORGANIZATIONAL AVAILABILITY - Pilates Caracas ==========
-        // Monday to Saturday, 6:00 - 21:00 (Early morning to evening classes)
+        // Monday to Saturday, 6:00 - 21:00 (Early morning to evening classes, America/Caracas time)
         {
           userId: null,
           organizationId: organizationsData[1].id,
@@ -618,6 +634,7 @@ async function seed() {
           dayOfWeek: "monday",
           startTime: "06:00:00",
           endTime: "21:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -627,6 +644,7 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "06:00:00",
           endTime: "21:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -636,6 +654,7 @@ async function seed() {
           dayOfWeek: "wednesday",
           startTime: "06:00:00",
           endTime: "21:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -645,6 +664,7 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "06:00:00",
           endTime: "21:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -654,6 +674,7 @@ async function seed() {
           dayOfWeek: "friday",
           startTime: "06:00:00",
           endTime: "21:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -663,11 +684,12 @@ async function seed() {
           dayOfWeek: "saturday",
           startTime: "07:00:00",
           endTime: "15:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
 
         // ========== EVENT-SPECIFIC OVERRIDE - Editorial Anagrama Reunión ==========
-        // Only Tuesday and Thursday afternoons (more restrictive than org-wide)
+        // Only Tuesday and Thursday afternoons (more restrictive than org-wide, America/Caracas time)
         {
           userId: null,
           organizationId: organizationsData[2].id,
@@ -675,6 +697,7 @@ async function seed() {
           dayOfWeek: "tuesday",
           startTime: "14:00:00",
           endTime: "18:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
         {
@@ -684,6 +707,7 @@ async function seed() {
           dayOfWeek: "thursday",
           startTime: "14:00:00",
           endTime: "18:00:00",
+          timezone: "America/Caracas",
           isActive: true,
         },
       ])

@@ -2,6 +2,7 @@ export interface TimeSlot {
     startTime: string;
     endTime: string;
     available: boolean;
+    sourceTimezone: string; // IANA timezone identifier (e.g., 'America/Caracas')
 }
 
 export interface EventOption {
