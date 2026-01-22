@@ -96,6 +96,7 @@ function isDateInPast(date: CalendarDate): boolean {
 
 interface CalendarPanelProps {
     selectedDate: CalendarDate
+    focusedDate: CalendarDate
     onDateChange: (date: CalendarDate) => void
     availableDates?: Set<string>
     availabilityCount?: Map<string, number>
@@ -106,6 +107,7 @@ interface CalendarPanelProps {
 
 export default function CalendarPanel({
     selectedDate,
+    focusedDate,
     onDateChange,
     availableDates = new Set(),
     availabilityCount = new Map(),
@@ -118,6 +120,7 @@ export default function CalendarPanel({
             <I18nProvider locale={locale}>
                 <Calendar
                     value={selectedDate}
+                    focusedValue={focusedDate}
                     onChange={onDateChange}
                     className="w-full"
                     aria-label="Select a date"

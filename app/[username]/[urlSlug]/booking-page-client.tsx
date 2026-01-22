@@ -1,25 +1,16 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, Suspense } from 'react';
 import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date';
 import BookingCard from '@/components/booking/booking-card';
 import { useSearchQueryParams } from '@/src/hooks/useSearchQueryParams';
+import { useAvailability, useTimeSlots } from '@/src/hooks/useBookingQueries';
 import type { EventData, TimeSlot } from '@/src/types/schema';
 
 interface BookingPageClientProps {
   eventData: EventData;
   username: string;
   urlSlug: string;
-}
-
-// API response types
-interface AvailabilityResponse {
-  availableDates: string[];
-  availabilityCount: Record<string, number>;
-}
-
-interface SlotsResponse {
-  slots: TimeSlot[];
 }
 
 function BookingPageClientInner({
@@ -29,21 +20,14 @@ function BookingPageClientInner({
 }: BookingPageClientProps) {
   const { params, setParam, setParams, replaceParams } = useSearchQueryParams();
 
-  // Local state for fetched data
-  const [availableDates, setAvailableDates] = useState<Set<string>>(new Set());
-  const [availabilityCount, setAvailabilityCount] = useState<Map<string, number>>(
-    new Map()
-  );
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-
   // Default timezone to local timezone
-  const [timezone, setTimezone] = useState<string>(() => {
+  const timezone = (() => {
     try {
       return getLocalTimeZone();
     } catch {
       return 'UTC';
     }
-  });
+  })();
 
   // Initialize month param in URL if not present (on fresh load)
   // Uses replace so back button doesn't go to clean URL
@@ -88,63 +72,38 @@ function BookingPageClientInner({
     return { year: selectedDate.year, month: selectedDate.month };
   })();
 
-  // Fetch availability when month, timezone, or event option changes
-  useEffect(() => {
-    const { year, month } = currentMonth;
+  // Create a focused date to control which month the calendar displays
+  // This is the "source of truth" for the visible month
+  const focusedDate = new CalendarDate(currentMonth.year, currentMonth.month, 15);
 
-    async function fetchAvailability() {
-      try {
-        const url = `/api/events/${username}/${urlSlug}/availability?year=${year}&month=${month}&timezone=${encodeURIComponent(timezone)}&eventOptionId=${selectedEventOptionId}`;
+  // Fetch availability using TanStack Query
+  const {
+    data: availabilityData,
+    isLoading: isLoadingAvailability,
+  } = useAvailability({
+    username,
+    urlSlug,
+    year: currentMonth.year,
+    month: currentMonth.month,
+    timezone,
+    eventOptionId: String(selectedEventOptionId),
+  });
 
-        const response = await fetch(url);
-        if (!response.ok) {
-          console.error('Failed to fetch availability:', response.status);
-          setAvailableDates(new Set());
-          setAvailabilityCount(new Map());
-          return;
-        }
+  // Fetch time slots using TanStack Query
+  const {
+    data: timeSlots = [],
+    isLoading: isLoadingSlots,
+  } = useTimeSlots({
+    username,
+    urlSlug,
+    date: params.date,
+    timezone,
+    eventOptionId: String(selectedEventOptionId),
+  });
 
-        const data: AvailabilityResponse = await response.json();
-        setAvailableDates(new Set(data.availableDates));
-        setAvailabilityCount(new Map(Object.entries(data.availabilityCount)));
-      } catch (error) {
-        console.error('Error fetching availability:', error);
-        setAvailableDates(new Set());
-        setAvailabilityCount(new Map());
-      }
-    }
-
-    fetchAvailability();
-  }, [currentMonth.year, currentMonth.month, timezone, selectedEventOptionId, username, urlSlug]);
-
-  // Fetch time slots when date, timezone, or event option changes
-  useEffect(() => {
-    if (!params.date) {
-      setTimeSlots([]);
-      return;
-    }
-
-    async function fetchTimeSlots() {
-      try {
-        const url = `/api/events/${username}/${urlSlug}/slots?date=${params.date}&timezone=${encodeURIComponent(timezone)}&eventOptionId=${selectedEventOptionId}`;
-
-        const response = await fetch(url);
-        if (!response.ok) {
-          console.error('Failed to fetch slots:', response.status);
-          setTimeSlots([]);
-          return;
-        }
-
-        const data: SlotsResponse = await response.json();
-        setTimeSlots(data.slots);
-      } catch (error) {
-        console.error('Error fetching time slots:', error);
-        setTimeSlots([]);
-      }
-    }
-
-    fetchTimeSlots();
-  }, [params.date, timezone, selectedEventOptionId, username, urlSlug]);
+  // Extract availability data with defaults
+  const availableDates = availabilityData?.availableDates ?? new Set<string>();
+  const availabilityCount = availabilityData?.availabilityCount ?? new Map<string, number>();
 
   // Event handlers
   function handleDateChange(date: CalendarDate) {
@@ -153,8 +112,9 @@ function BookingPageClientInner({
     setParams({ date: dateStr, slot: undefined });
   }
 
-  function handleTimezoneChange(tz: string) {
-    setTimezone(tz);
+  function handleTimezoneChange(_tz: string) {
+    // Timezone changes would require state management
+    // For now, we use the detected timezone
   }
 
   function handleMonthChange(year: number, month: number) {
@@ -186,11 +146,14 @@ function BookingPageClientInner({
     <BookingCard
       event={eventData}
       selectedDate={selectedDate}
+      focusedDate={focusedDate}
       timezone={timezone}
       availableDates={availableDates}
       availabilityCount={availabilityCount}
       timeSlots={timeSlots}
       selectedSlotTime={selectedSlotTime}
+      isLoadingAvailability={isLoadingAvailability}
+      isLoadingSlots={isLoadingSlots}
       onDateChange={handleDateChange}
       onTimezoneChange={handleTimezoneChange}
       onMonthChange={handleMonthChange}

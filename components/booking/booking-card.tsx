@@ -1,5 +1,6 @@
 import { CalendarDate } from "@internationalized/date";
 import CalendarPanel from "./calendar-panel";
+import CalendarPanelSkeleton from "./calendar-panel-skeleton";
 import EventInfoPanel from "./event-info-panel";
 import TimeSlotsPanel from "./time-slots-panel";
 import TimeSlotList from "./time-slot-list";
@@ -8,11 +9,14 @@ import { EventData, TimeSlot } from "@/src/types/schema";
 interface BookingCardProps {
     event: EventData;
     selectedDate: CalendarDate;
+    focusedDate: CalendarDate;
     timezone: string;
     availableDates?: Set<string>;
     availabilityCount?: Map<string, number>;
     timeSlots?: TimeSlot[];
     selectedSlotTime?: string;
+    isLoadingAvailability?: boolean;
+    isLoadingSlots?: boolean;
     onDateChange: (date: CalendarDate) => void;
     onTimezoneChange: (tz: string) => void;
     onMonthChange?: (year: number, month: number) => void;
@@ -22,11 +26,14 @@ interface BookingCardProps {
 export default function BookingCard({
     event,
     selectedDate,
+    focusedDate,
     timezone,
     availableDates = new Set(),
     availabilityCount = new Map(),
     timeSlots = [],
     selectedSlotTime,
+    isLoadingAvailability = false,
+    isLoadingSlots = false,
     onDateChange,
     onTimezoneChange,
     onMonthChange,
@@ -48,16 +55,25 @@ export default function BookingCard({
                                 onTimezoneChange={onTimezoneChange}
                             />
 
-                            {/* Center Panel: Calendar */}
-                            <CalendarPanel
-                                selectedDate={selectedDate}
-                                onDateChange={onDateChange}
-                                availableDates={availableDates}
-                                availabilityCount={availabilityCount}
-                                showAvailabilityDots={true}
-                                locale="es-ES"
-                                onVisibleMonthChange={onMonthChange}
-                            />
+                            {/* Center Panel: Calendar - Show skeleton while loading */}
+                            {isLoadingAvailability ? (
+                                <CalendarPanelSkeleton
+                                    locale="es-ES"
+                                    year={focusedDate.year}
+                                    month={focusedDate.month}
+                                />
+                            ) : (
+                                <CalendarPanel
+                                    selectedDate={selectedDate}
+                                    focusedDate={focusedDate}
+                                    onDateChange={onDateChange}
+                                    availableDates={availableDates}
+                                    availabilityCount={availabilityCount}
+                                    showAvailabilityDots={true}
+                                    locale="es-ES"
+                                    onVisibleMonthChange={onMonthChange}
+                                />
+                            )}
 
                             {/* Right Panel: Time Slots */}
                             <TimeSlotsPanel selectedDate={selectedDate}>
