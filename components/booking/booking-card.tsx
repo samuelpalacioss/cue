@@ -13,6 +13,7 @@ interface BookingCardProps {
   selectedDate: CalendarDate;
   focusedDate: CalendarDate;
   timezone: string;
+  selectedDuration: number;
   availableDates?: Set<string>;
   availabilityCount?: Map<string, number>;
   timeSlots?: TimeSlot[];
@@ -23,6 +24,7 @@ interface BookingCardProps {
   onTimezoneChange: (tz: string) => void;
   onMonthChange?: (year: number, month: number) => void;
   onSlotSelect?: (slot: TimeSlot | undefined) => void;
+  onDurationChange: (duration: number) => void;
   timeFormat: TimeFormat;
   setTimeFormat: (format: TimeFormat) => void;
 }
@@ -32,6 +34,7 @@ export default function BookingCard({
   selectedDate,
   focusedDate,
   timezone,
+  selectedDuration,
   availableDates = new Set(),
   availabilityCount = new Map(),
   timeSlots = [],
@@ -42,6 +45,7 @@ export default function BookingCard({
   onTimezoneChange,
   onMonthChange,
   onSlotSelect,
+  onDurationChange,
   timeFormat,
   setTimeFormat,
 }: BookingCardProps) {
@@ -58,7 +62,9 @@ export default function BookingCard({
               <EventInfoPanel
                 event={event}
                 timezone={timezone}
+                selectedDuration={selectedDuration}
                 onTimezoneChange={onTimezoneChange}
+                onDurationChange={onDurationChange}
               />
 
               {/* Center Panel: Calendar - Show skeleton while loading */}

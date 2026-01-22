@@ -256,7 +256,7 @@ export async function getTimeSlotsForDate(
   if (daySchedules.length === 0) return [];
 
   // Get the source timezone from the first schedule (all schedules for a user/org should have the same timezone)
-  const sourceTimezone = daySchedules[0].timezone || 'UTC';
+  const sourceTimezone = daySchedules[0].timezone || "UTC";
 
   // Generate time slots
   const allSlots: Array<{ start: string; end: string }> = [];

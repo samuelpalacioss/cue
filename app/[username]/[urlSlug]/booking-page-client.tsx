@@ -63,17 +63,41 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
     }
   }, [timezone]);
 
-  // Initialize month param in URL if not present (on fresh load)
+  // Initialize month and duration params in URL if not present (on fresh load)
   // Uses replace so back button doesn't go to clean URL
   useEffect(() => {
+    const paramsToSet: Record<string, string | number> = {};
+
     if (!params.month) {
       const now = today(getLocalTimeZone());
-      const monthStr = `${now.year}-${String(now.month).padStart(2, "0")}`;
-      replaceParams({
-        month: monthStr,
-      });
+      paramsToSet.month = `${now.year}-${String(now.month).padStart(2, "0")}`;
+    }
+
+    if (!params.duration) {
+      const defaultOption = eventData.eventOptions.find(
+        (opt) => opt.id === eventData.defaultOptionId,
+      );
+      if (defaultOption) {
+        paramsToSet.duration = defaultOption.durationMinutes;
+      }
+    }
+
+    if (Object.keys(paramsToSet).length > 0) {
+      replaceParams(paramsToSet);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Derive selected duration from URL params or default
+  const selectedDuration = (() => {
+    if (params.duration) {
+      const option = eventData.eventOptions.find((opt) => opt.durationMinutes === params.duration);
+      if (option) return params.duration;
+    }
+    const defaultOption = eventData.eventOptions.find(
+      (opt) => opt.id === eventData.defaultOptionId,
+    );
+    return defaultOption?.durationMinutes!;
+  })();
 
   // Derive selected event option ID from duration param
   const selectedEventOptionId = (() => {
@@ -223,6 +247,11 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
     setParam("slot", isoTimestamp);
   }
 
+  function handleDurationChange(durationMinutes: number) {
+    // Clear slot selection when duration changes since slots depend on duration
+    setParams({ duration: durationMinutes, slot: undefined });
+  }
+
   // Extract selected slot time from URL (HH:MM format for comparison)
   const selectedSlotTime = (() => {
     if (!params.slot) return undefined;
@@ -238,6 +267,7 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
       selectedDate={selectedDate}
       focusedDate={focusedDate}
       timezone={timezone}
+      selectedDuration={selectedDuration}
       availableDates={availableDates}
       availabilityCount={availabilityCount}
       timeSlots={timeSlots}
@@ -248,6 +278,7 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
       onTimezoneChange={handleTimezoneChange}
       onMonthChange={handleMonthChange}
       onSlotSelect={handleSlotSelect}
+      onDurationChange={handleDurationChange}
       timeFormat={timeFormat}
       setTimeFormat={setTimeFormat}
     />

@@ -2,11 +2,14 @@ import { EventData } from "@/src/types/schema";
 import { formatDuration } from "@/src/utils/booking/date-utils";
 import { CheckSquare, Clock, MapPin, Phone, Video } from "lucide-react";
 import TimeZoneSelector from "./time-zone-selector";
+import DurationSelector from "./duration-selector";
 
 interface EventInfoPanelProps {
   event: EventData;
   timezone: string;
+  selectedDuration: number;
   onTimezoneChange: (tz: string) => void;
+  onDurationChange: (duration: number) => void;
 }
 
 const MEETING_TYPE_ICONS = {
@@ -23,13 +26,15 @@ const MEETING_TYPE_LABELS = {
   in_person: "Presencial",
 };
 
-export default function EventInfoPanel({ event, timezone, onTimezoneChange }: EventInfoPanelProps) {
+export default function EventInfoPanel({
+  event,
+  timezone,
+  selectedDuration,
+  onTimezoneChange,
+  onDurationChange,
+}: EventInfoPanelProps) {
   const MeetingIcon = MEETING_TYPE_ICONS[event.meetingType];
   const meetingLabel = MEETING_TYPE_LABELS[event.meetingType];
-
-  // Get default option duration
-  const defaultOption = event.eventOptions.find((opt) => opt.id === event.defaultOptionId);
-  const durationMinutes = defaultOption?.durationMinutes ?? 30;
 
   return (
     <div className="p-5 md:rounded-l-lg md:border-b-0 md:border-r md:border-zinc-800 md:bg-zinc-900">
@@ -43,6 +48,13 @@ export default function EventInfoPanel({ event, timezone, onTimezoneChange }: Ev
         {/* Event's title */}
         <h1 className="text-xl font-semibold text-white">{event.title}</h1>
 
+        {/* Event's duration selector */}
+        <DurationSelector
+          value={selectedDuration}
+          onChange={onDurationChange}
+          durationOptions={event.eventOptions.map((opt) => opt.durationMinutes)}
+        />
+
         {/* Requires confirmation ? */}
         {event.requiresConfirmation && (
           <div className="flex items-center gap-2 text-sm text-zinc-300">
@@ -50,12 +62,6 @@ export default function EventInfoPanel({ event, timezone, onTimezoneChange }: Ev
             <span>Requiere confirmación</span>
           </div>
         )}
-
-        {/* Duration */}
-        <div className="flex items-center gap-2 text-sm text-zinc-300">
-          <Clock className="h-4 w-4" />
-          <span>{formatDuration(durationMinutes)}</span>
-        </div>
 
         {/* Meeting type */}
         <div className="flex items-center gap-2 text-sm text-zinc-300">
