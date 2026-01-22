@@ -81,6 +81,7 @@ export default function BookingCard({
                                     slots={timeSlots}
                                     selectedSlotTime={selectedSlotTime}
                                     onSlotSelect={onSlotSelect}
+                                    isLoading={isLoadingSlots}
                                 />
                             </TimeSlotsPanel>
                         </div>

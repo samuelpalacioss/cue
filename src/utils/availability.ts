@@ -8,6 +8,15 @@ import {
 } from '@/src/db/dal';
 
 /**
+ * Get today's date in UTC as a string (YYYY-MM-DD format)
+ */
+function getTodayDateString(): string {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  return today.toISOString().split('T')[0];
+}
+
+/**
  * Generate time slots array from schedule
  * @param startTime - Start time in HH:MM format (e.g., '09:00')
  * @param endTime - End time in HH:MM format (e.g., '17:00')
@@ -140,6 +149,9 @@ export async function getAvailableDatesForMonth(
   const firstDay = new Date(Date.UTC(year, month - 1, 1));
   const lastDay = new Date(Date.UTC(year, month, 0));
 
+  // Get today's date for filtering past dates
+  const todayStr = getTodayDateString();
+
   // Get all bookings for the month
   const startDateStr = firstDay.toISOString().split('T')[0];
   const endDateStr = lastDay.toISOString().split('T')[0];
@@ -151,6 +163,9 @@ export async function getAvailableDatesForMonth(
   for (let day = 1; day <= lastDay.getUTCDate(); day++) {
     const currentDate = new Date(Date.UTC(year, month - 1, day));
     const dateStr = currentDate.toISOString().split('T')[0];
+
+    // Skip past dates
+    if (dateStr < todayStr) continue;
 
     // Find schedules for this specific date (handles both specific date and recurring schedules)
     const daySchedules = await findAvailabilitySchedulesForDate(
@@ -211,6 +226,10 @@ export async function getTimeSlotsForDate(
   eventOptionId?: number,
   timezone: string = 'UTC'
 ): Promise<TimeSlot[]> {
+  // Don't return time slots for past dates
+  const todayStr = getTodayDateString();
+  if (date < todayStr) return [];
+
   const event = await findEventByUsernameAndSlug(username, slug);
   if (!event) return [];
 

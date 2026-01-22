@@ -60,7 +60,7 @@ export async function GET(
     const { date, timezone, eventOptionId } = queryResult.data;
 
     // Get time slots for the date
-    const result = await getTimeSlotsForDate(
+    const slots = await getTimeSlotsForDate(
       username,
       urlSlug,
       date,
@@ -68,14 +68,7 @@ export async function GET(
       timezone
     );
 
-    if (!result) {
-      return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(result);
+    return NextResponse.json({ slots });
   } catch (error) {
     console.error('Error fetching time slots:', error);
     return NextResponse.json(
