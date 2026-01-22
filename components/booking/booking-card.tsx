@@ -20,6 +20,7 @@ interface BookingCardProps {
   selectedSlotTime?: string;
   isLoadingAvailability?: boolean;
   isLoadingSlots?: boolean;
+  isSlotsFetched?: boolean;
   onDateChange: (date: CalendarDate) => void;
   onTimezoneChange: (tz: string) => void;
   onMonthChange?: (year: number, month: number) => void;
@@ -41,6 +42,7 @@ export default function BookingCard({
   selectedSlotTime,
   isLoadingAvailability = false,
   isLoadingSlots = false,
+  isSlotsFetched = false,
   onDateChange,
   onTimezoneChange,
   onMonthChange,
@@ -89,9 +91,11 @@ export default function BookingCard({
 
               {/* Right Panel: Time Slots - Show skeleton while loading */}
               {/* Also show skeleton if selected date's month doesn't match focused month (pending update) */}
+              {/* Or if slots haven't been fetched yet (query might be disabled if no date in URL) */}
               {isLoadingAvailability ||
               isLoadingSlots ||
-              selectedDate.month !== focusedDate.month ? (
+              selectedDate.month !== focusedDate.month ||
+              !isSlotsFetched ? (
                 <TimeSlotsPanelSkeleton />
               ) : (
                 <TimeSlotsPanel

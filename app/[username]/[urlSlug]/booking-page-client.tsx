@@ -147,7 +147,7 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
   });
 
   // Fetch time slots using TanStack Query
-  const { data: timeSlots = [], isLoading: isLoadingSlots } = useTimeSlots({
+  const { data: timeSlots = [], isLoading: isLoadingSlots, isFetched: isSlotsFetched } = useTimeSlots({
     username,
     urlSlug,
     date: params.date,
@@ -274,6 +274,7 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
       selectedSlotTime={selectedSlotTime}
       isLoadingAvailability={isLoadingAvailability}
       isLoadingSlots={isLoadingSlots}
+      isSlotsFetched={isSlotsFetched}
       onDateChange={handleDateChange}
       onTimezoneChange={handleTimezoneChange}
       onMonthChange={handleMonthChange}
