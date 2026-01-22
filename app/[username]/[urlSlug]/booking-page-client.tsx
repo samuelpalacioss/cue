@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, Suspense } from 'react';
-import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date';
-import BookingCard from '@/components/booking/booking-card';
-import { useSearchQueryParams } from '@/src/hooks/useSearchQueryParams';
-import { useAvailability, useTimeSlots, bookingKeys } from '@/src/hooks/useBookingQueries';
-import type { EventData, TimeSlot } from '@/src/types/schema';
-import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, Suspense } from "react";
+import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
+import BookingCard from "@/components/booking/booking-card";
+import { useSearchQueryParams } from "@/src/hooks/useSearchQueryParams";
+import { useAvailability, useTimeSlots, bookingKeys } from "@/src/hooks/useBookingQueries";
+import type { EventData, TimeSlot } from "@/src/types/schema";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface BookingPageClientProps {
   eventData: EventData;
@@ -14,11 +14,7 @@ interface BookingPageClientProps {
   urlSlug: string;
 }
 
-function BookingPageClientInner({
-  eventData,
-  username,
-  urlSlug,
-}: BookingPageClientProps) {
+function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageClientProps) {
   const { params, setParam, setParams, replaceParams } = useSearchQueryParams();
   const queryClient = useQueryClient();
 
@@ -27,7 +23,7 @@ function BookingPageClientInner({
     try {
       return getLocalTimeZone();
     } catch {
-      return 'UTC';
+      return "UTC";
     }
   })();
 
@@ -36,7 +32,7 @@ function BookingPageClientInner({
   useEffect(() => {
     if (!params.month) {
       const now = today(getLocalTimeZone());
-      const monthStr = `${now.year}-${String(now.month).padStart(2, '0')}`;
+      const monthStr = `${now.year}-${String(now.month).padStart(2, "0")}`;
       replaceParams({
         month: monthStr,
       });
@@ -46,9 +42,7 @@ function BookingPageClientInner({
   // Derive selected event option ID from duration param
   const selectedEventOptionId = (() => {
     if (params.duration) {
-      const option = eventData.eventOptions.find(
-        (opt) => opt.durationMinutes === params.duration
-      );
+      const option = eventData.eventOptions.find((opt) => opt.durationMinutes === params.duration);
       if (option) return option.id;
     }
     return eventData.defaultOptionId;
@@ -58,7 +52,7 @@ function BookingPageClientInner({
   // The useEffect below will set it to first available date if not present
   const selectedDate = (() => {
     if (params.date) {
-      const [year, month, day] = params.date.split('-').map(Number);
+      const [year, month, day] = params.date.split("-").map(Number);
       if (year && month && day) {
         return new CalendarDate(year, month, day);
       }
@@ -70,7 +64,7 @@ function BookingPageClientInner({
   // Derive current visible month from URL params
   const currentMonth = (() => {
     if (params.month) {
-      const [year, month] = params.month.split('-').map(Number);
+      const [year, month] = params.month.split("-").map(Number);
       if (year && month) {
         return { year, month };
       }
@@ -83,10 +77,7 @@ function BookingPageClientInner({
   const focusedDate = new CalendarDate(currentMonth.year, currentMonth.month, 15);
 
   // Fetch availability using TanStack Query
-  const {
-    data: availabilityData,
-    isLoading: isLoadingAvailability,
-  } = useAvailability({
+  const { data: availabilityData, isLoading: isLoadingAvailability } = useAvailability({
     username,
     urlSlug,
     year: currentMonth.year,
@@ -96,10 +87,7 @@ function BookingPageClientInner({
   });
 
   // Fetch time slots using TanStack Query
-  const {
-    data: timeSlots = [],
-    isLoading: isLoadingSlots,
-  } = useTimeSlots({
+  const { data: timeSlots = [], isLoading: isLoadingSlots } = useTimeSlots({
     username,
     urlSlug,
     date: params.date,
@@ -111,16 +99,27 @@ function BookingPageClientInner({
   const availableDates = availabilityData?.availableDates ?? new Set<string>();
   const availabilityCount = availabilityData?.availabilityCount ?? new Map<string, number>();
 
-  // Set first available date when availability loads and no date is selected
+  // Set first available date when availability loads and (no date selected OR month changed via navigation)
   useEffect(() => {
-    if (!params.date && availableDates.size > 0 && !isLoadingAvailability) {
-      // Get first available date from the sorted set (API already filters past dates)
+    if (availableDates.size > 0 && !isLoadingAvailability) {
       const firstAvailableDate = Array.from(availableDates).sort()[0];
-      if (firstAvailableDate) {
+      if (!firstAvailableDate) return;
+
+      // Case 1: No date selected yet (initial load)
+      if (!params.date) {
         replaceParams({ date: firstAvailableDate });
+        return;
+      }
+
+      // Case 2: Date's month doesn't match current month param (navigated to different month)
+      if (params.month) {
+        const dateMonth = params.date.substring(0, 7); // Extract "2026-01" from "2026-01-25"
+        if (dateMonth !== params.month) {
+          replaceParams({ date: firstAvailableDate });
+        }
       }
     }
-  }, [availableDates, params.date, isLoadingAvailability]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [availableDates, params.date, params.month, isLoadingAvailability]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Prefetch time slots for all available dates in the current month
   useEffect(() => {
@@ -135,7 +134,9 @@ function BookingPageClientInner({
             String(selectedEventOptionId)
           ),
           queryFn: async () => {
-            const url = `/api/events/${username}/${urlSlug}/slots?date=${date}&timezone=${encodeURIComponent(timezone)}&eventOptionId=${selectedEventOptionId}`;
+            const url = `/api/events/${username}/${urlSlug}/slots?date=${date}&timezone=${encodeURIComponent(
+              timezone
+            )}&eventOptionId=${selectedEventOptionId}`;
             const response = await fetch(url);
             if (!response.ok) {
               throw new Error(`Failed to fetch slots: ${response.status}`);
@@ -147,11 +148,21 @@ function BookingPageClientInner({
         });
       });
     }
-  }, [availableDates, isLoadingAvailability, username, urlSlug, timezone, selectedEventOptionId, queryClient]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    availableDates,
+    isLoadingAvailability,
+    username,
+    urlSlug,
+    timezone,
+    selectedEventOptionId,
+    queryClient,
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Event handlers
   function handleDateChange(date: CalendarDate) {
-    const dateStr = `${date.year}-${String(date.month).padStart(2, '0')}-${String(date.day).padStart(2, '0')}`;
+    const dateStr = `${date.year}-${String(date.month).padStart(2, "0")}-${String(
+      date.day
+    ).padStart(2, "0")}`;
     // Clear slot selection when date changes
     setParams({ date: dateStr, slot: undefined });
   }
@@ -162,19 +173,19 @@ function BookingPageClientInner({
   }
 
   function handleMonthChange(year: number, month: number) {
-    const monthStr = `${year}-${String(month).padStart(2, '0')}`;
+    const monthStr = `${year}-${String(month).padStart(2, "0")}`;
     // console.log('handleMonthChange called:', { year, month, monthStr });
-    setParam('month', monthStr);
+    setParam("month", monthStr);
   }
 
   function handleSlotSelect(slot: TimeSlot | undefined) {
     if (!slot || !params.date) {
-      setParam('slot', undefined);
+      setParam("slot", undefined);
       return;
     }
     // Store as ISO timestamp combining date and time
     const isoTimestamp = `${params.date}T${slot.startTime}:00`;
-    setParam('slot', isoTimestamp);
+    setParam("slot", isoTimestamp);
   }
 
   // Extract selected slot time from URL (HH:MM format for comparison)

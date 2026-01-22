@@ -7,20 +7,13 @@ interface TimeSlotListProps {
     slots: TimeSlot[];
     selectedSlotTime?: string;
     onSlotSelect?: (slot: TimeSlot | undefined) => void;
-    isLoading?: boolean;
 }
 
 export default function TimeSlotList({
     slots,
     selectedSlotTime,
     onSlotSelect,
-    isLoading = false
 }: TimeSlotListProps) {
-    // Don't show "no slots" message while loading (prefetch might be in progress)
-    if (isLoading) {
-        return null;
-    }
-
     if (slots.length === 0) {
         return (
             <p className="py-8 text-center text-sm text-zinc-400">

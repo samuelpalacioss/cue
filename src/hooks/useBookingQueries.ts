@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import type { TimeSlot } from '@/src/types/schema';
+import { useQuery } from "@tanstack/react-query";
+import type { TimeSlot } from "@/src/types/schema";
 
 // API response types
 interface AvailabilityResponse {
@@ -13,7 +13,7 @@ interface SlotsResponse {
 
 // Query keys factory for better organization and type safety
 export const bookingKeys = {
-  all: ['booking'] as const,
+  all: ["booking"] as const,
   availability: (
     username: string,
     urlSlug: string,
@@ -24,7 +24,7 @@ export const bookingKeys = {
   ) =>
     [
       ...bookingKeys.all,
-      'availability',
+      "availability",
       username,
       urlSlug,
       year,
@@ -38,16 +38,7 @@ export const bookingKeys = {
     date: string,
     timezone: string,
     eventOptionId: string
-  ) =>
-    [
-      ...bookingKeys.all,
-      'slots',
-      username,
-      urlSlug,
-      date,
-      timezone,
-      eventOptionId,
-    ] as const,
+  ) => [...bookingKeys.all, "slots", username, urlSlug, date, timezone, eventOptionId] as const,
 };
 
 // Hook for fetching available dates for a month
@@ -69,16 +60,11 @@ export function useAvailability({
   enabled?: boolean;
 }) {
   return useQuery({
-    queryKey: bookingKeys.availability(
-      username,
-      urlSlug,
-      year,
-      month,
-      timezone,
-      eventOptionId
-    ),
+    queryKey: bookingKeys.availability(username, urlSlug, year, month, timezone, eventOptionId),
     queryFn: async () => {
-      const url = `/api/events/${username}/${urlSlug}/availability?year=${year}&month=${month}&timezone=${encodeURIComponent(timezone)}&eventOptionId=${eventOptionId}`;
+      const url = `/api/events/${username}/${urlSlug}/availability?year=${year}&month=${month}&timezone=${encodeURIComponent(
+        timezone
+      )}&eventOptionId=${eventOptionId}`;
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -118,13 +104,15 @@ export function useTimeSlots({
   return useQuery({
     queryKey: date
       ? bookingKeys.slots(username, urlSlug, date, timezone, eventOptionId)
-      : ['slots-disabled'],
+      : ["slots-disabled"],
     queryFn: async () => {
       if (!date) {
         return [];
       }
 
-      const url = `/api/events/${username}/${urlSlug}/slots?date=${date}&timezone=${encodeURIComponent(timezone)}&eventOptionId=${eventOptionId}`;
+      const url = `/api/events/${username}/${urlSlug}/slots?date=${date}&timezone=${encodeURIComponent(
+        timezone
+      )}&eventOptionId=${eventOptionId}`;
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -132,6 +120,9 @@ export function useTimeSlots({
       }
 
       const data: SlotsResponse = await response.json();
+
+      // await new Promise(resolve => setTimeout(resolve, 4000)); // Delay to see skeleton
+
       return data.slots;
     },
     staleTime: 2 * 60 * 1000, // 2 minutes - slots can change as people book

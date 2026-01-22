@@ -3,6 +3,7 @@ import CalendarPanel from "./calendar-panel";
 import CalendarPanelSkeleton from "./calendar-panel-skeleton";
 import EventInfoPanel from "./event-info-panel";
 import TimeSlotsPanel from "./time-slots-panel";
+import TimeSlotsPanelSkeleton from "./time-slots-panel-skeleton";
 import TimeSlotList from "./time-slot-list";
 import { EventData, TimeSlot } from "@/src/types/schema";
 
@@ -75,15 +76,18 @@ export default function BookingCard({
                                 />
                             )}
 
-                            {/* Right Panel: Time Slots */}
-                            <TimeSlotsPanel selectedDate={selectedDate}>
-                                <TimeSlotList
-                                    slots={timeSlots}
-                                    selectedSlotTime={selectedSlotTime}
-                                    onSlotSelect={onSlotSelect}
-                                    isLoading={isLoadingSlots}
-                                />
-                            </TimeSlotsPanel>
+                            {/* Right Panel: Time Slots - Show skeleton while loading */}
+                            {isLoadingAvailability || isLoadingSlots ? (
+                                <TimeSlotsPanelSkeleton />
+                            ) : (
+                                <TimeSlotsPanel selectedDate={selectedDate}>
+                                    <TimeSlotList
+                                        slots={timeSlots}
+                                        selectedSlotTime={selectedSlotTime}
+                                        onSlotSelect={onSlotSelect}
+                                    />
+                                </TimeSlotsPanel>
+                            )}
                         </div>
                     </div>
                 </div>
