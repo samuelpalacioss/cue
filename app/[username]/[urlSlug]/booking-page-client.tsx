@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
 import BookingCard from "@/components/booking/booking-card";
 import { useSearchQueryParams } from "@/src/hooks/useSearchQueryParams";
 import { useAvailability, useTimeSlots, bookingKeys } from "@/src/hooks/useBookingQueries";
 import type { EventData, TimeSlot } from "@/src/types/schema";
 import { useQueryClient } from "@tanstack/react-query";
+import { TimeFormat } from "@/src/utils/booking/date-utils";
+import { DEFAULT_TIME_FORMAT } from "@/src/utils/constants";
+
+const TIME_FORMAT_STORAGE_KEY = "booking-time-format";
 
 interface BookingPageClientProps {
   eventData: EventData;
@@ -17,6 +21,24 @@ interface BookingPageClientProps {
 function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageClientProps) {
   const { params, setParam, setParams, replaceParams } = useSearchQueryParams();
   const queryClient = useQueryClient();
+
+  // Manage time format state with localStorage persistence
+  const [timeFormat, setTimeFormat] = useState<TimeFormat>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(TIME_FORMAT_STORAGE_KEY);
+      if (stored === "12h" || stored === "24h") {
+        return stored;
+      }
+    }
+    return DEFAULT_TIME_FORMAT;
+  });
+
+  // Update localStorage when timeFormat changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(TIME_FORMAT_STORAGE_KEY, timeFormat);
+    }
+  }, [timeFormat]);
 
   // Default timezone to local timezone
   const timezone = (() => {
@@ -213,6 +235,8 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
       onTimezoneChange={handleTimezoneChange}
       onMonthChange={handleMonthChange}
       onSlotSelect={handleSlotSelect}
+      timeFormat={timeFormat}
+      setTimeFormat={setTimeFormat}
     />
   );
 }

@@ -6,6 +6,7 @@ import TimeSlotsPanel from "./time-slots-panel";
 import TimeSlotsPanelSkeleton from "./time-slots-panel-skeleton";
 import TimeSlotList from "./time-slot-list";
 import { EventData, TimeSlot } from "@/src/types/schema";
+import { TimeFormat } from "@/src/utils/booking/date-utils";
 
 interface BookingCardProps {
     event: EventData;
@@ -22,6 +23,8 @@ interface BookingCardProps {
     onTimezoneChange: (tz: string) => void;
     onMonthChange?: (year: number, month: number) => void;
     onSlotSelect?: (slot: TimeSlot | undefined) => void;
+    timeFormat: TimeFormat;
+    setTimeFormat: (format: TimeFormat) => void;
 }
 
 export default function BookingCard({
@@ -39,6 +42,8 @@ export default function BookingCard({
     onTimezoneChange,
     onMonthChange,
     onSlotSelect,
+    timeFormat,
+    setTimeFormat,
 }: BookingCardProps) {
     return (
         <div>
@@ -81,11 +86,16 @@ export default function BookingCard({
                             {isLoadingAvailability || isLoadingSlots || selectedDate.month !== focusedDate.month ? (
                                 <TimeSlotsPanelSkeleton />
                             ) : (
-                                <TimeSlotsPanel selectedDate={selectedDate}>
+                                <TimeSlotsPanel 
+                                    selectedDate={selectedDate}
+                                    timeFormat={timeFormat}
+                                    setTimeFormat={setTimeFormat}
+                                >
                                     <TimeSlotList
                                         slots={timeSlots}
                                         selectedSlotTime={selectedSlotTime}
                                         onSlotSelect={onSlotSelect}
+                                        timeFormat={timeFormat}
                                     />
                                 </TimeSlotsPanel>
                             )}

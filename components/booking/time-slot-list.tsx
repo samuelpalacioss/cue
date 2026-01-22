@@ -2,17 +2,21 @@
 
 import { TimeSlot } from "@/src/types/schema";
 import TimeSlotButton from "./time-slot-button";
+import { TimeFormat } from "@/src/utils/booking/date-utils";
+import { formatTime } from "@/src/utils/booking/date-utils";
 
 interface TimeSlotListProps {
     slots: TimeSlot[];
     selectedSlotTime?: string;
     onSlotSelect?: (slot: TimeSlot | undefined) => void;
+    timeFormat: TimeFormat;
 }
 
 export default function TimeSlotList({
     slots,
     selectedSlotTime,
     onSlotSelect,
+    timeFormat,
 }: TimeSlotListProps) {
     if (slots.length === 0) {
         return (
@@ -26,6 +30,7 @@ export default function TimeSlotList({
         <>
             {slots.map((slot) => {
                 const isCurrentlySelected = selectedSlotTime === slot.startTime;
+                const formattedTime = formatTime(slot.startTime, timeFormat);
 
                 return (
                     <TimeSlotButton
@@ -41,7 +46,7 @@ export default function TimeSlotList({
                                 onSlotSelect(slot);
                             }
                         }}
-                        displayTime={slot.startTime}
+                        displayTime={formattedTime}
                     />
                 );
             })}
