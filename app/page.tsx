@@ -33,6 +33,7 @@ const mockEvent: EventData = {
 export default function Home() {
   const [timezone, setTimezone] = useState(getLocalTimeZone());
   const [selectedDate, setSelectedDate] = useState(today(getLocalTimeZone()));
+  const [focusedDate, setFocusedDate] = useState(today(getLocalTimeZone()));
 
   return (
     <>
@@ -47,7 +48,11 @@ export default function Home() {
         timezone={timezone}
         onTimezoneChange={setTimezone}
       /> */}
-      <CalendarPanel selectedDate={selectedDate} onDateChange={setSelectedDate} />
+      <CalendarPanel 
+        selectedDate={selectedDate} 
+        focusedDate={focusedDate}
+        onDateChange={setSelectedDate} 
+      />
     </>
   );
 }
