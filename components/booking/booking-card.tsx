@@ -77,7 +77,8 @@ export default function BookingCard({
                             )}
 
                             {/* Right Panel: Time Slots - Show skeleton while loading */}
-                            {isLoadingAvailability || isLoadingSlots ? (
+                            {/* Also show skeleton if selected date's month doesn't match focused month (pending update) */}
+                            {isLoadingAvailability || isLoadingSlots || selectedDate.month !== focusedDate.month ? (
                                 <TimeSlotsPanelSkeleton />
                             ) : (
                                 <TimeSlotsPanel selectedDate={selectedDate}>
