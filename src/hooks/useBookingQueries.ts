@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { TimeSlot } from "@/src/types/schema";
+import type { TimeSlot, SlotsRangeResponse } from "@/src/types/schema";
 
 // API response types
 interface AvailabilityResponse {
@@ -39,6 +39,14 @@ export const bookingKeys = {
     timezone: string,
     eventOptionId: string
   ) => [...bookingKeys.all, "slots", username, urlSlug, date, timezone, eventOptionId] as const,
+  slotsRange: (
+    username: string,
+    urlSlug: string,
+    startDate: string,
+    endDate: string,
+    timezone: string,
+    eventOptionId: string
+  ) => [...bookingKeys.all, "slotsRange", username, urlSlug, startDate, endDate, timezone, eventOptionId] as const,
 };
 
 // Hook for fetching available dates for a month
@@ -127,5 +135,44 @@ export function useTimeSlots({
     },
     staleTime: 2 * 60 * 1000, // 2 minutes - slots can change as people book
     enabled: enabled && !!date,
+  });
+}
+
+// Hook for fetching time slots for a date range
+export function useTimeSlotsRange({
+  username,
+  urlSlug,
+  startDate,
+  endDate,
+  timezone,
+  eventOptionId,
+  enabled = true,
+}: {
+  username: string;
+  urlSlug: string;
+  startDate: string;
+  endDate: string;
+  timezone: string;
+  eventOptionId: string;
+  enabled?: boolean;
+}) {
+  return useQuery({
+    queryKey: bookingKeys.slotsRange(username, urlSlug, startDate, endDate, timezone, eventOptionId),
+    queryFn: async () => {
+      const url = `/api/events/${username}/${urlSlug}/slots?startDate=${startDate}&endDate=${endDate}&timezone=${encodeURIComponent(
+        timezone
+      )}&eventOptionId=${eventOptionId}`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch slots range: ${response.status}`);
+      }
+
+      const data: SlotsRangeResponse = await response.json();
+
+      return data.slotsByDate;
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes - same as single-date hook
+    enabled,
   });
 }

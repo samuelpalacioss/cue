@@ -1,5 +1,6 @@
 import type { EventData, TimeSlot } from "@/src/types/schema";
 import {
+  findAvailabilitySchedules,
   findAvailabilitySchedulesForDate,
   findBookingsForDate,
   findBookingsForDateRange,
@@ -157,7 +158,69 @@ export async function getAvailableDatesForMonth(
   const endDateStr = lastDay.toISOString().split("T")[0];
   const bookings = await findBookingsForDateRange(selectedOption.id, startDateStr, endDateStr);
 
+  // Optimization #5: Fetch ALL schedules for this event once (instead of per-day in loop)
+  // Reduces 56-62 queries to 1 query
+  const allSchedules = await findAvailabilitySchedules(
+    event.id,
+    event.userId,
+    event.organizationId,
+  );
+
+  // Helper function to filter schedules for a specific date
+  // Replicates the logic from findAvailabilitySchedulesForDate but in-memory
+  function getSchedulesForDate(date: string, schedules: typeof allSchedules): typeof allSchedules {
+    const dateObj = new Date(date + "T00:00:00Z");
+    const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const dayOfWeek = days[dateObj.getUTCDay()];
+
+    // Priority 1: Specific date schedules
+    const specificDateSchedules = schedules.filter((s) => s.specificDate === date);
+    if (specificDateSchedules.length > 0) return specificDateSchedules;
+
+    // Priority 2: Recurring schedules for this day of week
+    return schedules.filter((s) => s.dayOfWeek === dayOfWeek && s.specificDate === null);
+  }
+
+  // Optimization #7: Group bookings by date AND time slot in a single pass
+  // This is more efficient than the original guide's Optimization #1 + #2
+  const bookingsByDateAndSlot = new Map<string, Map<string, number>>();
+  for (const booking of bookings) {
+    // Get or create the date-level map
+    if (!bookingsByDateAndSlot.has(booking.date)) {
+      bookingsByDateAndSlot.set(booking.date, new Map());
+    }
+    const slotMap = bookingsByDateAndSlot.get(booking.date)!;
+
+    // Increment the count for this specific slot
+    slotMap.set(booking.timeSlot, (slotMap.get(booking.timeSlot) || 0) + 1);
+  }
+
   const availabilityCount: Record<string, number> = {};
+
+  // Optimization #3: Cache for slot generation - prevents regenerating identical time slots
+  const scheduleCache = new Map<string, Array<{ start: string; end: string }>>();
+
+  function getSlotsForSchedules(
+    schedules: typeof allSchedules,
+    durationMinutes: number,
+  ): Array<{ start: string; end: string }> {
+    // Create cache key from schedule times
+    const key =
+      schedules
+        .map((s) => `${s.startTime}-${s.endTime}`)
+        .sort()
+        .join("|") + `|${durationMinutes}`;
+
+    if (!scheduleCache.has(key)) {
+      const slots: Array<{ start: string; end: string }> = [];
+      for (const schedule of schedules) {
+        slots.push(...generateTimeSlots(schedule.startTime, schedule.endTime, durationMinutes));
+      }
+      scheduleCache.set(key, slots);
+    }
+
+    return scheduleCache.get(key)!;
+  }
 
   // Iterate through each day in the month
   for (let day = 1; day <= lastDay.getUTCDate(); day++) {
@@ -168,35 +231,30 @@ export async function getAvailableDatesForMonth(
     if (dateStr < todayStr) continue;
 
     // Find schedules for this specific date (handles both specific date and recurring schedules)
-    const daySchedules = await findAvailabilitySchedulesForDate(
-      event.id,
-      dateStr,
-      event.userId,
-      event.organizationId,
-    );
+    const daySchedules = getSchedulesForDate(dateStr, allSchedules);
 
     if (daySchedules.length === 0) continue;
 
-    // Generate slots for this day from all applicable schedules
-    let totalSlots = 0;
-    const allSlots: Array<{ start: string; end: string }> = [];
+    // Generate slots for this day from all applicable schedules (uses cache from Optimization #3)
+    const allSlots = getSlotsForSchedules(daySchedules, durationMinutes);
 
-    for (const schedule of daySchedules) {
-      const slots = generateTimeSlots(schedule.startTime, schedule.endTime, durationMinutes);
-      allSlots.push(...slots);
-      totalSlots += slots.length;
-    }
-
-    // Count bookings for this date
-    const dayBookings = bookings.filter((booking) => booking.date === dateStr);
-
-    // Calculate available slots
-    // For each slot, check if it's booked
-    let bookedSlots = 0;
+    // Optimization #6: Deduplicate slots by start time (same logic as getTimeSlotsForDate:285)
+    // Fixes bug where overlapping schedules cause incorrect slot counts
+    const uniqueSlotsMap = new Map<string, { start: string; end: string }>();
     for (const slot of allSlots) {
-      const slotBookings = dayBookings.filter((booking) => booking.timeSlot === slot.start);
-      // If capacity > 1, we can have multiple bookings per slot
-      if (slotBookings.length >= selectedOption.capacity) {
+      uniqueSlotsMap.set(slot.start, slot);
+    }
+    const uniqueSlots = Array.from(uniqueSlotsMap.values());
+    const totalSlots = uniqueSlots.length;
+
+    // Get the slot-level booking counts for this date (O(1) lookup)
+    const bookingsPerSlot = bookingsByDateAndSlot.get(dateStr) || new Map();
+
+    // Count fully booked slots (O(unique slots))
+    let bookedSlots = 0;
+    for (const slot of uniqueSlots) {
+      const bookingCount = bookingsPerSlot.get(slot.start) || 0;
+      if (bookingCount >= selectedOption.capacity) {
         bookedSlots++;
       }
     }
@@ -214,6 +272,170 @@ export async function getAvailableDatesForMonth(
     availableDates,
     availabilityCount,
   };
+}
+
+/**
+ * Get time slots for a date range (max 31 days)
+ * Returns slots grouped by date for efficient batch fetching
+ */
+export async function getTimeSlotsForDateRange(
+  username: string,
+  slug: string,
+  startDate: string,
+  endDate: string,
+  eventOptionId?: number,
+  timezone: string = "UTC",
+): Promise<Record<string, TimeSlot[]>> {
+  // Validate date range
+  const start = new Date(startDate + "T00:00:00Z");
+  const end = new Date(endDate + "T00:00:00Z");
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    throw new Error("Invalid date format");
+  }
+
+  if (start > end) {
+    throw new Error("Start date must be before or equal to end date");
+  }
+
+  const daysDiff = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  if (daysDiff > 31) {
+    throw new Error("Date range cannot exceed 31 days");
+  }
+
+  // Get today's date for filtering past dates
+  const todayStr = getTodayDateString();
+
+  const event = await findEventByUsernameAndSlug(username, slug);
+  if (!event) return {};
+
+  // Get event options
+  const options = await findEventOptions(event.id);
+  if (options.length === 0) return {};
+
+  // Find the selected option or use default
+  let selectedOption = options.find((opt) => opt.id === eventOptionId);
+  if (!selectedOption) {
+    selectedOption = options.find((opt) => opt.isDefault) ?? options[0];
+  }
+
+  const durationMinutes = selectedOption.duration?.durationMinutes ?? 30;
+
+  // Fetch all bookings for the date range (single query)
+  const bookings = await findBookingsForDateRange(selectedOption.id, startDate, endDate);
+
+  // Fetch all availability schedules for this event once (single query)
+  const allSchedules = await findAvailabilitySchedules(
+    event.id,
+    event.userId,
+    event.organizationId,
+  );
+
+  // Get source timezone from first schedule (all schedules for the event should have the same timezone)
+  const sourceTimezone = allSchedules[0]?.timezone || "UTC";
+
+  // Helper function to filter schedules for a specific date (same as getAvailableDatesForMonth)
+  // E.g: Only on Feb 21, 2026, the schedule is specific to that date, so we return the specific date schedules,
+  // otherwise we return the recurring schedules for the day of week.
+  function getSchedulesForDate(date: string, schedules: typeof allSchedules): typeof allSchedules {
+    const dateObj = new Date(date + "T00:00:00Z");
+    const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const dayOfWeek = days[dateObj.getUTCDay()];
+
+    // Priority 1: Specific date schedules
+    const specificDateSchedules = schedules.filter((s) => s.specificDate === date);
+    if (specificDateSchedules.length > 0) return specificDateSchedules;
+
+    // Priority 2: Recurring schedules for this day of week
+    return schedules.filter((s) => s.dayOfWeek === dayOfWeek && s.specificDate === null);
+  }
+
+  // Group bookings by date AND time slot (same optimization as getAvailableDatesForMonth)
+  // Create a nested Map: date -> time slot -> booking count
+  const bookingsByDateAndSlot = new Map<string, Map<string, number>>();
+  for (const booking of bookings) {
+    if (!bookingsByDateAndSlot.has(booking.date)) {
+      bookingsByDateAndSlot.set(booking.date, new Map());
+    }
+    const slotMap = bookingsByDateAndSlot.get(booking.date)!;
+    slotMap.set(booking.timeSlot, (slotMap.get(booking.timeSlot) || 0) + 1);
+  }
+
+  // Cache for slot generation (same optimization as getAvailableDatesForMonth)
+  const scheduleCache = new Map<string, Array<{ start: string; end: string }>>();
+
+  // Generate time slots for a list of schedules
+  function getSlotsForSchedules(
+    schedules: typeof allSchedules,
+    durationMinutes: number,
+  ): Array<{ start: string; end: string }> {
+    const key =
+      schedules
+        .map((s) => `${s.startTime}-${s.endTime}`)
+        .sort()
+        .join("|") + `|${durationMinutes}`;
+
+    if (!scheduleCache.has(key)) {
+      const slots: Array<{ start: string; end: string }> = [];
+      for (const schedule of schedules) {
+        slots.push(...generateTimeSlots(schedule.startTime, schedule.endTime, durationMinutes));
+      }
+      scheduleCache.set(key, slots);
+    }
+
+    return scheduleCache.get(key)!;
+  }
+
+  // Build result map by iterating through each date in range
+  const result: Record<string, TimeSlot[]> = {};
+
+  let currentDate = new Date(start);
+  while (currentDate <= end) {
+    const dateStr = currentDate.toISOString().split("T")[0]; // Gets current date in YYYY-MM-DD format
+
+    // Skip past dates
+    if (dateStr >= todayStr) {
+      // 1. Find schedules for this specific date (handles both specific date and recurring schedules)
+      const daySchedules = getSchedulesForDate(dateStr, allSchedules);
+
+      if (daySchedules.length > 0) {
+        // 2. Generate slots for this day (uses cache)
+        const allSlots = getSlotsForSchedules(daySchedules, durationMinutes);
+
+        // 3. Deduplicate slots by start time (same logic as getAvailableDatesForMonth)
+        const uniqueSlotsMap = new Map<string, { start: string; end: string }>();
+        for (const slot of allSlots) {
+          uniqueSlotsMap.set(slot.start, slot);
+        }
+        const uniqueSlots = Array.from(uniqueSlotsMap.values());
+
+        // 4. Get booking counts for this date
+        const bookingsPerSlot = bookingsByDateAndSlot.get(dateStr) || new Map();
+
+        // 5. Build TimeSlot array with availability info
+        const timeSlots: TimeSlot[] = uniqueSlots.map((slot) => {
+          const bookingCount = bookingsPerSlot.get(slot.start) || 0;
+          const available = bookingCount < selectedOption.capacity;
+
+          return {
+            startTime: slot.start,
+            endTime: slot.end,
+            available, // Indicates if the capacity of the slot has not been reached (true) or reached (false)
+            sourceTimezone,
+          };
+        });
+
+        // 6. Sort by start time
+        result[dateStr] = timeSlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
+      }
+    }
+
+    // 7. Move to next day, until we reach the end date
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+  }
+
+  // Return the result map: date -> time slots
+  return result;
 }
 
 /**
@@ -268,10 +490,16 @@ export async function getTimeSlotsForDate(
   // Get bookings for this date
   const bookings = await findBookingsForDate(selectedOption.id, date);
 
+  // Optimization #4: Group bookings by time slot (O(bookings))
+  const bookingsPerSlot = new Map<string, number>();
+  for (const booking of bookings) {
+    bookingsPerSlot.set(booking.timeSlot, (bookingsPerSlot.get(booking.timeSlot) || 0) + 1);
+  }
+
   // Mark slots as available/unavailable
   const timeSlots: TimeSlot[] = allSlots.map((slot) => {
-    const slotBookings = bookings.filter((booking) => booking.timeSlot === slot.start);
-    const available = slotBookings.length < selectedOption.capacity;
+    const bookingCount = bookingsPerSlot.get(slot.start) || 0;
+    const available = bookingCount < selectedOption.capacity;
 
     return {
       startTime: slot.start,

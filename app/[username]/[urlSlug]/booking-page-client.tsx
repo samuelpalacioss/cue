@@ -4,7 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
 import BookingCard from "@/components/booking/booking-card";
 import { useSearchQueryParams } from "@/src/hooks/useSearchQueryParams";
-import { useAvailability, useTimeSlots, bookingKeys } from "@/src/hooks/useBookingQueries";
+import { useAvailability, useTimeSlots, useTimeSlotsRange, bookingKeys } from "@/src/hooks/useBookingQueries";
 import type { EventData, TimeSlot } from "@/src/types/schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { TimeFormat } from "@/src/utils/booking/date-utils";
@@ -159,6 +159,41 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
   const availableDates = availabilityData?.availableDates ?? new Set<string>();
   const availabilityCount = availabilityData?.availabilityCount ?? new Map<string, number>();
 
+  // Calculate month date range for prefetching
+  const monthDateRange = (() => {
+    const year = currentMonth.year;
+    const month = currentMonth.month;
+    const firstDay = new Date(Date.UTC(year, month - 1, 1));
+    const lastDay = new Date(Date.UTC(year, month, 0));
+    return {
+      startDate: firstDay.toISOString().split('T')[0],
+      endDate: lastDay.toISOString().split('T')[0],
+    };
+  })();
+
+  // Fetch all slots for the month in a single request
+  const { data: monthSlots } = useTimeSlotsRange({
+    username,
+    urlSlug,
+    startDate: monthDateRange.startDate,
+    endDate: monthDateRange.endDate,
+    timezone,
+    eventOptionId: String(selectedEventOptionId),
+    enabled: !isLoadingAvailability && availableDates.size > 0,
+  });
+
+  // Populate individual date query cache from range result
+  useEffect(() => {
+    if (monthSlots) {
+      Object.entries(monthSlots).forEach(([date, slots]) => {
+        queryClient.setQueryData(
+          bookingKeys.slots(username, urlSlug, date, timezone, String(selectedEventOptionId)),
+          slots
+        );
+      });
+    }
+  }, [monthSlots, username, urlSlug, timezone, selectedEventOptionId, queryClient]);
+
   // Set first available date when availability loads and (no date selected OR month changed via navigation)
   useEffect(() => {
     if (availableDates.size > 0 && !isLoadingAvailability) {
@@ -180,43 +215,6 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
       }
     }
   }, [availableDates, params.date, params.month, isLoadingAvailability]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Prefetch time slots for all available dates in the current month
-  useEffect(() => {
-    if (availableDates.size > 0 && !isLoadingAvailability) {
-      availableDates.forEach((date) => {
-        queryClient.prefetchQuery({
-          queryKey: bookingKeys.slots(
-            username,
-            urlSlug,
-            date,
-            timezone,
-            String(selectedEventOptionId),
-          ),
-          queryFn: async () => {
-            const url = `/api/events/${username}/${urlSlug}/slots?date=${date}&timezone=${encodeURIComponent(
-              timezone,
-            )}&eventOptionId=${selectedEventOptionId}`;
-            const response = await fetch(url);
-            if (!response.ok) {
-              throw new Error(`Failed to fetch slots: ${response.status}`);
-            }
-            const data = await response.json();
-            return data.slots;
-          },
-          staleTime: 2 * 60 * 1000, // 2 minutes
-        });
-      });
-    }
-  }, [
-    availableDates,
-    isLoadingAvailability,
-    username,
-    urlSlug,
-    timezone,
-    selectedEventOptionId,
-    queryClient,
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Event handlers
   function handleDateChange(date: CalendarDate) {

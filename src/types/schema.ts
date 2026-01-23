@@ -5,6 +5,10 @@ export interface TimeSlot {
     sourceTimezone: string; // IANA timezone identifier (e.g., 'America/Caracas')
 }
 
+export interface SlotsRangeResponse {
+    slotsByDate: Record<string, TimeSlot[]>;
+}
+
 export interface EventOption {
     id: number;
     durationMinutes: number;
