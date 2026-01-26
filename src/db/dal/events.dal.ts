@@ -8,6 +8,7 @@ import {
   eventOptions,
   events,
   organizations,
+  persons,
   users,
   type AvailabilitySchedule,
   type Booking,
@@ -16,6 +17,7 @@ import {
   type Event,
   type EventOption,
   type Organization,
+  type Person,
   type User,
 } from '@/src/db/schema';
 
@@ -302,4 +304,61 @@ export async function findAvailabilitySchedulesForDate(
     .where(and(eq(availabilitySchedules.isActive, true), or(...recurringConditions)));
 
   return recurringSchedules;
+}
+
+/**
+ * Find the default event option ID for an event
+ */
+export async function findDefaultEventOptionId(eventId: string): Promise<number | undefined> {
+  const result = await db
+    .select({ id: eventOptions.id })
+    .from(eventOptions)
+    .where(
+      and(
+        eq(eventOptions.eventId, eventId),
+        eq(eventOptions.isDefault, true)
+      )
+    )
+    .limit(1);
+
+  return result[0]?.id;
+}
+
+/**
+ * Find bookings with person data for a date range and event option
+ * Returns bookings joined with person information
+ */
+export async function findBookingsWithPersonsForDateRange(
+  eventOptionId: number,
+  startDate: string,
+  endDate: string
+): Promise<
+  Array<
+    Booking & {
+      person: Person | null;
+    }
+  >
+> {
+  const result = await db
+    .select({
+      booking: bookings,
+      person: persons,
+    })
+    .from(bookings)
+    .leftJoin(persons, eq(bookings.personId, persons.id))
+    .where(
+      and(
+        eq(bookings.eventOptionId, eventOptionId),
+        gte(bookings.date, startDate),
+        lte(bookings.date, endDate),
+        // Only fetch confirmed or pending bookings
+        or(eq(bookings.status, 'confirmed'), eq(bookings.status, 'pending'))
+      )
+    )
+    .orderBy(bookings.date, bookings.timeSlot);
+
+  return result.map(({ booking, person }) => ({
+    ...booking,
+    person,
+  }));
 }
