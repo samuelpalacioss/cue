@@ -25,3 +25,15 @@ export interface EventData {
     owners: Array<{ name: string; avatarUrl?: string; role?: string }>;
     eventOptions: EventOption[]; // All available booking options
 }
+
+export interface BookingWithPerson {
+    id: number;
+    eventOptionId: number;
+    date: string;
+    timeSlot: string; // HH:MM format
+    status: 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'no_show';
+    person: {
+        firstName: string;
+        lastName: string;
+    } | null;
+}

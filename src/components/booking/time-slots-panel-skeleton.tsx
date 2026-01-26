@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/src/components/ui/skeleton";
 
 // **OPTIMIZATION (Rule 6.3): Hoist static JSX to module level**
 // These skeleton time slot buttons don't change, so we create them once and reuse

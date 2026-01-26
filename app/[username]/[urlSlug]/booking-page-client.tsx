@@ -2,9 +2,14 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { CalendarDate, today, getLocalTimeZone } from "@internationalized/date";
-import BookingCard from "@/components/booking/booking-card";
+import BookingCard from "@/src/components/booking/booking-card";
 import { useSearchQueryParams } from "@/src/hooks/useSearchQueryParams";
-import { useAvailability, useTimeSlots, useTimeSlotsRange, bookingKeys } from "@/src/hooks/useBookingQueries";
+import {
+  useAvailability,
+  useTimeSlots,
+  useTimeSlotsRange,
+  bookingKeys,
+} from "@/src/hooks/useBookingQueries";
 import type { EventData, TimeSlot } from "@/src/types/schema";
 import { useQueryClient } from "@tanstack/react-query";
 import { TimeFormat } from "@/src/utils/booking/date-utils";
@@ -147,7 +152,11 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
   });
 
   // Fetch time slots using TanStack Query
-  const { data: timeSlots = [], isLoading: isLoadingSlots, isFetched: isSlotsFetched } = useTimeSlots({
+  const {
+    data: timeSlots = [],
+    isLoading: isLoadingSlots,
+    isFetched: isSlotsFetched,
+  } = useTimeSlots({
     username,
     urlSlug,
     date: params.date,
@@ -166,8 +175,8 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
     const firstDay = new Date(Date.UTC(year, month - 1, 1));
     const lastDay = new Date(Date.UTC(year, month, 0));
     return {
-      startDate: firstDay.toISOString().split('T')[0],
-      endDate: lastDay.toISOString().split('T')[0],
+      startDate: firstDay.toISOString().split("T")[0],
+      endDate: lastDay.toISOString().split("T")[0],
     };
   })();
 
@@ -188,7 +197,7 @@ function BookingPageClientInner({ eventData, username, urlSlug }: BookingPageCli
       Object.entries(monthSlots).forEach(([date, slots]) => {
         queryClient.setQueryData(
           bookingKeys.slots(username, urlSlug, date, timezone, String(selectedEventOptionId)),
-          slots
+          slots,
         );
       });
     }
