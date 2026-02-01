@@ -42,9 +42,8 @@ export default function CalendarPanelSkeleton({
       </header>
 
       <div className="h-[430px]">
-        {/* Calendar grid skeleton - 7 columns to match calendar day layout */}
-        <div className="grid w-full grid-cols-7 gap-1">
-          {/* Day headers */}
+        {/* Day headers */}
+        <div className="grid w-full grid-cols-7">
           {WEEKDAY_LABELS.map((label, i) => (
             <div
               key={`header-${i}`}
@@ -53,6 +52,9 @@ export default function CalendarPanelSkeleton({
               {label}
             </div>
           ))}
+        </div>
+        {/* Calendar grid skeleton - 7 columns to match calendar day layout */}
+        <div className="grid w-full grid-cols-7 gap-1">
           {/* Calendar cells - 5 rows of 7 */}
           {Array.from({ length: SKELETON_CELL_COUNT }).map((_, i) => (
             <Skeleton
