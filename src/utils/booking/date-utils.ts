@@ -77,10 +77,10 @@ export function formatTime(
     return convertedTimeStr; // Return original if parsing fails
   }
 
-  const period = hours >= 12 ? "pm" : "am";
+  const period = hours >= 12 ? "PM" : "AM";
   const hours12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
 
-  return `${hours12}:${String(minutes).padStart(2, "0")}${period}`;
+  return `${hours12}:${String(minutes).padStart(2, "0")} ${period}`;
 }
 
 /**
