@@ -36,16 +36,16 @@ export default function WeekViewCalendar({
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex flex-none items-center justify-between border-b border-white/15 bg-gray-800/50 px-6 py-4">
-        <h1 className="text-base font-semibold text-white">
+      <header className="flex flex-none items-center justify-between border-b border-gray-400 bg-stone-100 px-6 py-4">
+        <h1 className="text-base font-semibold text-gray-900">
           <time dateTime={toISODate(weekStart)}>{formatWeekRange(weekStart)}</time>
         </h1>
         <div className="flex items-center gap-4">
-          <div className="relative flex items-center rounded-md bg-white/10 outline -outline-offset-1 outline-white/5 md:items-stretch">
+          <div className="relative flex items-center rounded-md bg-stone-200 outline -outline-offset-1 outline-gray-400 md:items-stretch">
             <button
               type="button"
               onClick={() => onWeekChange("prev")}
-              className="flex h-9 w-12 items-center justify-center rounded-l-md pr-1 text-gray-400 hover:text-white focus:relative md:w-9 md:pr-0 md:hover:bg-white/10"
+              className="flex h-9 w-12 items-center justify-center rounded-l-md pr-1 text-gray-700 hover:text-gray-900 focus:relative md:w-9 md:pr-0 md:hover:bg-stone-300"
             >
               <span className="sr-only">Semana anterior</span>
               <ChevronLeft aria-hidden="true" className="size-5" />
@@ -53,15 +53,15 @@ export default function WeekViewCalendar({
             <button
               type="button"
               onClick={() => onWeekChange("today")}
-              className="hidden px-3.5 text-sm font-semibold text-white hover:bg-white/10 focus:relative md:block"
+              className="hidden px-3.5 text-sm font-semibold text-gray-900 hover:bg-stone-300 focus:relative md:block"
             >
               Hoy
             </button>
-            <span className="relative -mx-px h-5 w-px bg-white/10 md:hidden" />
+            <span className="relative -mx-px h-5 w-px bg-gray-400 md:hidden" />
             <button
               type="button"
               onClick={() => onWeekChange("next")}
-              className="flex h-9 w-12 items-center justify-center rounded-r-md pl-1 text-gray-400 hover:text-white focus:relative md:w-9 md:pl-0 md:hover:bg-white/10"
+              className="flex h-9 w-12 items-center justify-center rounded-r-md pl-1 text-gray-700 hover:text-gray-900 focus:relative md:w-9 md:pl-0 md:hover:bg-stone-300"
             >
               <span className="sr-only">Semana siguiente</span>
               <ChevronRight aria-hidden="true" className="size-5" />
@@ -75,14 +75,14 @@ export default function WeekViewCalendar({
         </div>
       </header>
 
-      <div className="isolate flex flex-auto flex-col overflow-auto bg-gray-900">
+      <div className="isolate flex flex-auto flex-col overflow-auto bg-stone-100">
         <div
           style={{ width: "165%" }}
           className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full"
         >
-          <div className="sticky top-0 z-30 flex-none bg-gray-900 ring-1 ring-white/20 sm:pr-8">
+          <div className="sticky top-0 z-30 flex-none bg-stone-100 ring-1 ring-gray-400 sm:pr-8">
             {/* Mobile day headers */}
-            <div className="grid grid-cols-7 text-sm/6 text-gray-400 sm:hidden">
+            <div className="grid grid-cols-7 text-sm/6 text-gray-700 sm:hidden">
               {weekDates.map((date, i) => {
                 const isTodayDate = isToday(date);
                 return (
@@ -90,7 +90,7 @@ export default function WeekViewCalendar({
                     {dayAbbreviations[i]}{" "}
                     <span
                       className={`mt-1 flex size-8 items-center justify-center font-semibold ${
-                        isTodayDate ? "rounded-full bg-indigo-500 text-white" : "text-white"
+                        isTodayDate ? "rounded-full bg-indigo-500 text-white" : "text-gray-900"
                       }`}
                     >
                       {date.day}
@@ -101,7 +101,7 @@ export default function WeekViewCalendar({
             </div>
 
             {/* Desktop day headers */}
-            <div className="-mr-px hidden grid-cols-7 divide-x divide-white/10 border-r border-white/10 text-sm/6 text-gray-400 sm:grid">
+            <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-400 border-r border-gray-400 text-sm/6 text-gray-700 sm:grid">
               <div className="col-end-1 w-14" />
               {weekDates.map((date, i) => {
                 const isTodayDate = isToday(date);
@@ -117,7 +117,7 @@ export default function WeekViewCalendar({
                     ) : (
                       <span>
                         {dayNames[i]}{" "}
-                        <span className="items-center justify-center font-semibold text-white">
+                        <span className="items-center justify-center font-semibold text-gray-900">
                           {date.day}
                         </span>
                       </span>
@@ -129,138 +129,138 @@ export default function WeekViewCalendar({
           </div>
 
           <div className="flex flex-auto">
-            <div className="sticky left-0 z-10 w-14 flex-none bg-gray-900 ring-1 ring-white/5" />
+            <div className="sticky left-0 z-10 w-14 flex-none bg-stone-100 ring-1 ring-gray-400" />
             <div className="grid flex-auto grid-cols-1 grid-rows-1">
               {/* Horizontal lines */}
               <div
                 style={{ gridTemplateRows: "repeat(24, minmax(3.5rem, 1fr))" }}
-                className="col-start-1 col-end-2 row-start-1 grid divide-y divide-white/5"
+                className="col-start-1 col-end-2 row-start-1 grid divide-y divide-gray-400 bg-stone-100"
               >
                 <div className="row-end-1 h-7" />
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     12AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     1AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     2AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     3AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     4AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     5AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     6AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     7AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     8AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     9AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     10AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     11AM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     12PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     1PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     2PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     3PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     4PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     5PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     6PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     7PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     8PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     9PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     10PM
                   </div>
                 </div>
                 <div>
-                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-500">
+                  <div className="sticky left-0 z-20 -mt-2.5 -ml-14 w-14 pr-2 text-right text-xs/5 text-gray-700">
                     11PM
                   </div>
                 </div>
               </div>
 
               {/* Vertical lines */}
-              <div className="col-start-1 col-end-2 row-start-1 hidden grid-rows-1 divide-x divide-white/5 sm:grid sm:grid-cols-7">
+              <div className="col-start-1 col-end-2 row-start-1 hidden grid-rows-1 divide-x divide-gray-400 sm:grid sm:grid-cols-7">
                 <div className="col-start-1 row-span-full" />
                 <div className="col-start-2 row-span-full" />
                 <div className="col-start-3 row-span-full" />
@@ -277,11 +277,11 @@ export default function WeekViewCalendar({
                 className="col-start-1 col-end-2 row-start-1 grid grid-cols-1 sm:grid-cols-7 sm:pr-8"
               >
                 {isLoading ? (
-                  <li className="col-span-full text-center text-gray-400 mt-4">
+                  <li className="col-span-full text-center text-gray-600 mt-4">
                     Cargando reservas...
                   </li>
                 ) : Object.keys(bookings).length === 0 ? (
-                  <li className="col-span-full text-center text-gray-400 mt-4">
+                  <li className="col-span-full text-center text-gray-600 mt-4">
                     No hay reservas esta semana
                   </li>
                 ) : (
@@ -299,7 +299,7 @@ export default function WeekViewCalendar({
 
                       const { rowStart, rowSpan, heightRem } = getGridPosition(
                         booking.timeSlot,
-                        duration
+                        duration,
                       );
 
                       return (

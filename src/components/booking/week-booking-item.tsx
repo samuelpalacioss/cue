@@ -33,10 +33,12 @@ export default function WeekBookingItem({
   // Determine color based on booking status
   const colorClass =
     booking.status === "confirmed"
-      ? "bg-blue-600/15 hover:bg-blue-600/20 text-blue-300"
+      ? "bg-teal-500/30 hover:bg-teal-500/40 text-teal-900"
       : booking.status === "pending"
-        ? "bg-yellow-600/15 hover:bg-yellow-600/20 text-yellow-300"
-        : "bg-gray-600/15 hover:bg-gray-600/20 text-gray-300";
+        ? "bg-yellow-300/40 hover:bg-yellow-300/50 text-yellow-900"
+        : booking.status === "cancelled"
+          ? "bg-red-300 hover:bg-red-400 text-gray-900"
+          : "bg-gray-300 hover:bg-gray-400 text-gray-900";
 
   const personName = booking.person
     ? `${booking.person.firstName} ${booking.person.lastName}`
@@ -49,19 +51,14 @@ export default function WeekBookingItem({
       }}
       className={`relative flex ${colStartClasses[colStart]}`}
     >
-      <div
-        style={{ height: `${heightRem}rem` }}
-        className="relative w-full mx-0.5"
-      >
+      <div style={{ height: `${heightRem}rem` }} className="relative w-full mx-0.5">
         <a
           href={`/dashboard/bookings/${booking.id}`}
           className={`group absolute inset-0 flex flex-col overflow-y-auto rounded-lg p-2 text-xs/5 ${colorClass}`}
         >
           <p className="order-1 font-semibold">{personName}</p>
           <p className="group-hover:opacity-80">
-            <time dateTime={`${date}T${booking.timeSlot}`}>
-              {formatTime(booking.timeSlot)}
-            </time>
+            <time dateTime={`${date}T${booking.timeSlot}`}>{formatTime(booking.timeSlot)}</time>
           </p>
         </a>
       </div>
