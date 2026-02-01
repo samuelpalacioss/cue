@@ -7,10 +7,6 @@ interface AvailabilityResponse {
   availabilityCount: Record<string, number>;
 }
 
-interface SlotsResponse {
-  slots: TimeSlot[];
-}
-
 interface DashboardBookingsResponse {
   bookingsByDate: Record<string, BookingWithPerson[]>;
 }
@@ -36,13 +32,6 @@ export const bookingKeys = {
       timezone,
       eventOptionId,
     ] as const,
-  slots: (
-    username: string,
-    urlSlug: string,
-    date: string,
-    timezone: string,
-    eventOptionId: string,
-  ) => [...bookingKeys.all, "slots", username, urlSlug, date, timezone, eventOptionId] as const,
   slotsRange: (
     username: string,
     urlSlug: string,
@@ -111,51 +100,6 @@ export function useAvailability({
     },
     staleTime: 3 * 60 * 1000, // 3 minutes - availability doesn't change too frequently
     enabled,
-  });
-}
-
-// Hook for fetching time slots for a specific date
-export function useTimeSlots({
-  username,
-  urlSlug,
-  date,
-  timezone,
-  eventOptionId,
-  enabled = true,
-}: {
-  username: string;
-  urlSlug: string;
-  date: string | undefined;
-  timezone: string;
-  eventOptionId: string;
-  enabled?: boolean;
-}) {
-  return useQuery({
-    queryKey: date
-      ? bookingKeys.slots(username, urlSlug, date, timezone, eventOptionId)
-      : ["slots-disabled"],
-    queryFn: async () => {
-      if (!date) {
-        return [];
-      }
-
-      const url = `/api/events/${username}/${urlSlug}/slots?date=${date}&timezone=${encodeURIComponent(
-        timezone,
-      )}&eventOptionId=${eventOptionId}`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch slots: ${response.status}`);
-      }
-
-      const data: SlotsResponse = await response.json();
-
-      // await new Promise(resolve => setTimeout(resolve, 4000)); // Delay to see skeleton
-
-      return data.slots;
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes - slots can change as people book
-    enabled: enabled && !!date,
   });
 }
 

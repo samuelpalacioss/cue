@@ -153,8 +153,15 @@ export default function CalendarPanel({
               year: "numeric",
             });
 
+            // Check if we're viewing the current month
+            const localToday = today(getLocalTimeZone());
+            const isCurrentMonth = visibleMonth === localToday.month && visibleYear === localToday.year;
+
             // Calculate previous and next months for navigation handlers
             const handlePreviousMonth = () => {
+              // Prevent navigating to past months
+              if (isCurrentMonth) return;
+
               const newMonth = visibleMonth === 1 ? 12 : visibleMonth - 1;
               const newYear = visibleMonth === 1 ? visibleYear - 1 : visibleYear;
               onVisibleMonthChange?.(newYear, newMonth);
@@ -176,7 +183,12 @@ export default function CalendarPanel({
                     <Button
                       slot="previous"
                       onPress={handlePreviousMonth}
-                      className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-md text-cue-deep-green transition-colors hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cue-deep-green"
+                      isDisabled={isCurrentMonth}
+                      className={`flex h-10 w-10 items-center justify-center rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cue-deep-green ${
+                        isCurrentMonth
+                          ? "cursor-not-allowed text-gray-300"
+                          : "cursor-pointer text-cue-deep-green hover:bg-gray-100"
+                      }`}
                     >
                       <ChevronLeft aria-hidden className="size-5.5" />
                     </Button>
