@@ -32,8 +32,8 @@ export default function TimeZoneSelector({ value, onChange }: TimeZoneSelectorPr
   }, [value]);
 
   return (
-    <div className="flex items-center gap-2 text-sm text-zinc-300">
-      <Globe className="h-4 w-4 shrink-0" />
+    <div className="flex items-center gap-2 text-sm text-zinc-700">
+      <Globe className="h-4 w-4 shrink-0 text-cue-deep-green" />
       <div className="relative inline-flex w-fit">
         {/* Fallback during SSR - always rendered to reserve space, invisible when mounted */}
         <div
@@ -42,7 +42,7 @@ export default function TimeZoneSelector({ value, onChange }: TimeZoneSelectorPr
           }`}
           aria-hidden={mounted}
         >
-          <span className="flex items-center gap-2 text-zinc-300 line-clamp-1 min-w-[140px]">
+          <span className="flex items-center gap-2 text-zinc-700 line-clamp-1 min-w-[140px]">
             {timezoneLabel}
           </span>
           <ChevronDown className="size-4 shrink-0 opacity-50 pointer-events-none" />
@@ -51,7 +51,7 @@ export default function TimeZoneSelector({ value, onChange }: TimeZoneSelectorPr
         {mounted && (
           <div className="absolute inset-0 flex items-center">
             <Select value={value} onValueChange={onChange}>
-              <SelectTrigger className="h-auto border-none bg-transparent p-0 shadow-none hover:text-white w-fit">
+              <SelectTrigger className="h-auto border-none bg-transparent p-0 shadow-none text-zinc-700 hover:text-zinc-900 w-fit">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="max-h-80">

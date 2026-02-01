@@ -37,16 +37,21 @@ export default function EventInfoPanel({
   const meetingLabel = MEETING_TYPE_LABELS[event.meetingType];
 
   return (
-    <div className="p-5 md:rounded-l-lg md:border-b-0 md:border-r md:border-zinc-800 md:bg-zinc-900">
+    <div className="p-5 md:rounded-l-lg md:border-b-0 md:border-r md:border-zinc-200 bg-cue-off-white">
       <div className="space-y-4">
         {/* Event owner and its image*/}
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500">
-          <p className="text-sm font-medium text-white">{event.owners[0]?.name?.charAt(0)}</p>
+        <div
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+          style={{ background: "var(--cue-slot-gradient)" }}
+        >
+          <p className="text-sm font-bold text-cue-deep-green">
+            {event.owners[0]?.name?.charAt(0)}
+          </p>
         </div>
-        <p className="text-sm font-semibold text-zinc-300">{event.owners[0]?.name}</p>
+        <p className="text-sm font-bold text-cue-deep-green">{event.owners[0]?.name}</p>
 
         {/* Event's title */}
-        <h1 className="text-xl font-semibold text-white">{event.title}</h1>
+        <h1 className="text-xl font-semibold text-cue-deep-green">{event.title}</h1>
 
         {/* Event's duration selector */}
         <DurationSelector
@@ -57,15 +62,15 @@ export default function EventInfoPanel({
 
         {/* Requires confirmation ? */}
         {event.requiresConfirmation && (
-          <div className="flex items-center gap-2 text-sm text-zinc-300">
-            <CheckSquare className="h-4 w-4" />
+          <div className="flex items-center gap-2 text-sm text-zinc-700">
+            <CheckSquare className="h-4 w-4 text-cue-deep-green" />
             <span>Requiere confirmación</span>
           </div>
         )}
 
         {/* Meeting type */}
-        <div className="flex items-center gap-2 text-sm text-zinc-300">
-          <MeetingIcon className="h-4 w-4" />
+        <div className="flex items-center gap-2 text-sm text-zinc-700">
+          <MeetingIcon className="h-4 w-4 text-cue-deep-green" />
           <span>{meetingLabel}</span>
         </div>
 

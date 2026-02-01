@@ -14,10 +14,12 @@ export default function DurationSelector({
   onChange,
   durationOptions,
 }: DurationSelectorProps) {
+  const segmentBase = "cursor-pointer px-4 py-2 text-sm font-medium transition-colors";
+
   return (
-    <div className="flex items-center gap-3 text-sm text-zinc-300">
-      <Clock className="h-4 w-4 shrink-0" />
-      <div className="relative inline-flex rounded-lg border border-zinc-700/50 bg-zinc-800/50 p-0.5">
+    <div className="flex items-center gap-3 text-sm text-zinc-700">
+      <Clock className="h-4 w-4 shrink-0 text-cue-deep-green" />
+      <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden bg-cue-off-white">
         {durationOptions.map((option, index) => {
           const isSelected = option === value;
           const isFirst = index === 0;
@@ -28,11 +30,11 @@ export default function DurationSelector({
               key={option}
               type="button"
               onClick={() => onChange(option)}
-              className={`whitespace-nowrap cursor-pointer px-3 py-1.5 text-sm text-white transition-all ${
+              className={`${segmentBase} whitespace-nowrap ${
                 isSelected
-                  ? "rounded-md bg-zinc-700/90 text-white"
-                  : "bg-transparent text-zinc-400 hover:text-zinc-300"
-              } ${isFirst ? "rounded-l-md" : ""} ${isLast ? "rounded-r-md" : ""}`}
+                  ? "bg-cue-deep-green text-white"
+                  : "text-zinc-500 hover:bg-gray-50 hover:text-zinc-900"
+              } ${isFirst ? "rounded-l-lg" : ""} ${isLast ? "rounded-r-lg" : ""}`}
             >
               {formatDuration(option)}
             </button>
