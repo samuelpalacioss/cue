@@ -70,7 +70,10 @@ export default function BookingCard({
               />
 
               {/* Center Panel: Calendar - Show skeleton while loading */}
-              {isLoadingAvailability ? (
+              {isLoadingAvailability ||
+              isLoadingSlots ||
+              selectedDate.month !== focusedDate.month ||
+              !isSlotsFetched ? (
                 <CalendarPanelSkeleton
                   locale="es-ES"
                   year={focusedDate.year}
