@@ -309,21 +309,21 @@ async function seed() {
           eventId: eventsData[0].id,
           durationId: durationsData[3].id, // 1 hora
           capacity: 1,
-          isDefault: true
+          isDefault: true,
         },
         // Coaching Profesional options
         {
           eventId: eventsData[1].id,
           durationId: durationsData[3].id, // 1 hora
           capacity: 1,
-          isDefault: true
+          isDefault: true,
         },
         // Consulta Médica options
         {
           eventId: eventsData[2].id,
           durationId: durationsData[1].id, // 30 minutos
           capacity: 1,
-          isDefault: true
+          isDefault: true,
         },
         {
           eventId: eventsData[2].id,
@@ -334,13 +334,13 @@ async function seed() {
         {
           eventId: eventsData[3].id,
           durationId: durationsData[3].id, // 1 hora
-          capacity: 5
+          capacity: 5,
         },
         {
           eventId: eventsData[3].id,
           durationId: durationsData[4].id, // 1.5 horas
           capacity: 3,
-          isDefault: true
+          isDefault: true,
         },
         // Reunión Editorial options
         {
@@ -780,6 +780,30 @@ async function seed() {
           status: "cancelled",
           notes: "Paciente reprogramó para la próxima semana.",
         },
+        {
+          eventOptionId: eventOptionsData[1].id, // Consultoría 1hr
+          personId: personsData[0].id,
+          date: "2026-01-27",
+          timeSlot: "09:00:00",
+          status: "cancelled",
+          notes: "Reserva cancelada por el cliente.",
+        },
+        {
+          eventOptionId: eventOptionsData[1].id, // Consultoría 1hr
+          personId: personsData[1].id,
+          date: "2026-01-27",
+          timeSlot: "13:00:00",
+          status: "pending",
+          notes: "Reserva pendiente de confirmación.",
+        },
+        {
+          eventOptionId: eventOptionsData[1].id, // Consultoría 1hr
+          personId: personsData[2].id,
+          date: "2026-01-27",
+          timeSlot: "17:00:00",
+          status: "confirmed",
+          notes: "Sesión confirmada y programada.",
+        },
       ])
       .returning();
     console.log(`✅ Created ${bookingsData.length} bookings`);
@@ -829,6 +853,30 @@ async function seed() {
           bookingId: bookingsData[4].id,
           personId: personsData[5].id,
           amountUsd: "150.00",
+          amountBs: null,
+          tasaCambio: null,
+          currency: "USD",
+        },
+        {
+          bookingId: bookingsData[5].id,
+          personId: personsData[0].id,
+          amountUsd: "100.00",
+          amountBs: "3600.00",
+          tasaCambio: "36.0000",
+          currency: "USD",
+        },
+        {
+          bookingId: bookingsData[6].id,
+          personId: personsData[1].id,
+          amountUsd: "100.00",
+          amountBs: null,
+          tasaCambio: null,
+          currency: "USD",
+        },
+        {
+          bookingId: bookingsData[7].id,
+          personId: personsData[2].id,
+          amountUsd: "100.00",
           amountBs: null,
           tasaCambio: null,
           currency: "USD",
