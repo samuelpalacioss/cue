@@ -16,7 +16,7 @@ export default function TimeSlotPanel({
   setTimeFormat,
 }: TimeSlotPanelProps) {
   return (
-    <div className="border-t border-zinc-800 bg-transparent p-5 md:rounded-r-lg md:border-t-0 md:bg-zinc-900">
+    <div className="border-t border-zinc-800 bg-cue-off-white p-5 md:rounded-r-lg md:border-t-0 md:bg-cue-off-white">
       <TimeSlotPanelHeader
         selectedDate={selectedDate}
         timeFormat={timeFormat}

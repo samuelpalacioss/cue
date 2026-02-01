@@ -24,11 +24,13 @@ export default function TimeSlotButton({
   return (
     <Button
       size="sm"
+      variant={isSelected ? "outline" : "default"}
       onClick={onClick}
-      className={`w-full cursor-pointer rounded-lg border border-zinc-700 text-zinc-200 bg-zinc-950 px-2.5 py-2 mb-2 min-h-9 text-sm leading-none font-medium text-center transition-all duration-200 focus-visible:outline-none focus-visible:ring-0 focus-visible:bg-zinc-800 ${
+      style={isSelected ? { background: "var(--cue-slot-gradient)" } : undefined}
+      className={`w-full cursor-pointer rounded-lg border border-zinc-400 text-zinc-200 px-2.5 py-4.5 mb-2 text-sm leading-none font-medium text-center transition-all duration-200 focus-visible:outline-none focus-visible:ring-0 focus-visible:bg-zinc-800 ${
         isSelected
-          ? " bg-zinc-800 shadow-md text-zinc-200"
-          : " hover:bg-zinc-800 hover:border-zinc-600 hover:text-zinc-200 hover:shadow-md active:shadow-sm text-zinc-200"
+          ? "border-cue-deep-green/50 shadow-md text-cue-deep-green"
+          : "bg-cue-off-white hover:bg-cue-muted-teal hover:border-cue-deep-green hover:text-white hover:shadow-md active:shadow-sm text-cue-deep-green"
       }`}
     >
       {displayTime}

@@ -35,20 +35,27 @@ export function TimeFormatToggle({ value, onChange }: TimeFormatToggleProps) {
     onChange?.(newFormat);
   };
 
+  // Single pill-shaped container: one border, rounded-full, segments only round on outer edges
+  const segmentBase = "cursor-pointer px-4 py-2 text-sm font-medium transition-colors";
+
   return (
-    <div className="inline-flex rounded-md bg-zinc-800 p-1">
+    <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden bg-cue-off-white">
       <button
         onClick={() => handleToggle("12h")}
-        className={`rounded cursor-pointer px-3 py-1 text-sm font-medium transition-colors ${
-          format === "12h" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
+        className={`${segmentBase} rounded-l-lg ${
+          format === "12h"
+            ? "bg-cue-deep-green text-white"
+            : "text-zinc-500 hover:bg-gray-50 hover:text-zinc-900"
         }`}
       >
         12h
       </button>
       <button
         onClick={() => handleToggle("24h")}
-        className={`rounded cursor-pointer px-3 py-1 text-sm font-medium transition-colors ${
-          format === "24h" ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
+        className={`${segmentBase} rounded-r-lg ${
+          format === "24h"
+            ? "bg-cue-deep-green text-white"
+            : "text-zinc-500 hover:bg-gray-50 hover:text-zinc-900"
         }`}
       >
         24h

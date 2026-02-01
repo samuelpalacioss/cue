@@ -21,8 +21,9 @@ export default function TimeSlotPanelHeader({
   return (
     <div className="mb-4 flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <h3 className="text-lg font-semibold text-white">{day}</h3>
-        <span className="text-md text-zinc-300">{date}</span>
+        <span className="text-lg font-semibold text-cue-deep-green capitalize">
+          {day} {date}
+        </span>
       </div>
       <TimeFormatToggle value={timeFormat} onChange={setTimeFormat} />
     </div>
